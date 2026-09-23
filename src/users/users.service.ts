@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Prisma, Role } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -45,5 +49,17 @@ export class UsersService {
       }
       throw error;
     }
+  }
+
+  async findMe(id: string): Promise<PublicUser> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: publicUserSelect,
+    });
+    // Token válido de um usuário que não existe mais.
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return user;
   }
 }

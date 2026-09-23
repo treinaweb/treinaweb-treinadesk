@@ -26,7 +26,8 @@ npm run seed                          # cria o ADMIN inicial (ADMIN_EMAIL/ADMIN_
 
 - **Node >= 24.9 obrigatório** (há `.nvmrc`/`engines`). O NestJS 12 é ESM-only e o Jest só carrega ESM via `require` com `--experimental-vm-modules` no Node 24.9+; por isso os scripts de teste chamam `node --experimental-vm-modules node_modules/jest/bin/jest.js`. Não use `npx jest` direto.
 - Os configs do Jest mapeiam imports relativos `*.js` para o `.ts` (necessário para o client do Prisma gerado em `nodenext`).
-- **Os e2e rodam contra o banco de `DATABASE_URL` (carregado do `.env` via `setupFiles`) e apagam a tabela `users`** — aponte para um banco de desenvolvimento/teste.
+- **Os e2e rodam contra o banco de `DATABASE_URL` (carregado do `.env` via `setupFiles`) e apagam a tabela `users` (e, em cascata, `refresh_tokens`)** — aponte para um banco de desenvolvimento/teste.
+- Após `prisma migrate dev`, rode `npx prisma generate`: no Prisma 7 o migrate não regenera o client.
 
 ## Arquitetura e particularidades
 
@@ -34,6 +35,8 @@ npm run seed                          # cria o ADMIN inicial (ADMIN_EMAIL/ADMIN_
 - A configuração do CLI do Prisma fica em `prisma7.config.ts` (schema, pasta de migrations e `DATABASE_URL`); o `datasource` do `schema.prisma` não tem `url`.
 - `PrismaService` (`src/prisma/`) estende o `PrismaClient` usando `@prisma/adapter-pg` com `process.env.DATABASE_URL`. `PrismaModule` é `@Global()` e importado só no `AppModule`; módulos de feature injetam `PrismaService` sem importá-lo.
 - Validação global: `ValidationPipe` (`whitelist`, `forbidNonWhitelisted`, `transform`) registrado como `APP_PIPE` no `AppModule` — vale também nos e2e, que não passam pelo `main.ts`. Propriedades não declaradas no DTO retornam 400.
+- **Autenticação obrigatória por padrão**: `JwtAuthGuard` é `APP_GUARD` (registrado no `AuthModule`). Toda rota nova exige `Authorization: Bearer <accessToken>`; só rotas marcadas com `@Public()` (`src/auth/public.decorator.ts`) ficam abertas — hoje `POST /users`, `POST /auth/login` e `POST /auth/refresh`. Use `@CurrentUser()` para obter `{ id, email, role }` do token.
+- Access token JWT HS256 (`JWT_ACCESS_SECRET` obrigatória, `JWT_ACCESS_EXPIRES_IN` padrão `15m`); refresh token opaco guardado só como SHA-256 em `refresh_tokens`, com validade de `REFRESH_TOKEN_TTL_DAYS` (padrão 7). A rotação usa compare-and-set (`updateMany` + `count === 0`) em transação e não lança dentro dela, para que a revogação por reutilização seja comitada.
 - Seed em `prisma/seed.ts` (executado com `tsx`, configurado em `migrations.seed` do `prisma7.config.ts`); a lógica fica em `src/users/seed-admin.ts`.
 - `tsconfig.json` tem `rootDir: "./"` (exigido pelo TS 6 para o ts-jest); o build usa `tsconfig.build.json` com `rootDir: "./src"`.
 - Variáveis de ambiente vêm de `.env` via `import 'dotenv/config'` em `src/main.ts` (não há `@nestjs/config`).

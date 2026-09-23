@@ -187,4 +187,57 @@ describe('Users (e2e)', () => {
       expect(JSON.stringify(res.body)).not.toContain('curta12');
     });
   });
+
+  describe('Consulta do próprio perfil', () => {
+    const password = 'senha-forte-123';
+
+    const signUpAndLogin = async (name: string, email: string) => {
+      const { body: user } = await postUser({ name, email, password }).expect(
+        201,
+      );
+      const { body: tokens } = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ email, password })
+        .expect(200);
+      return { user, accessToken: tokens.accessToken as string };
+    };
+
+    const getMe = (accessToken: string) =>
+      request(app.getHttpServer())
+        .get('/users/me')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+    it('retorna exatamente os campos públicos do usuário autenticado', async () => {
+      const { user, accessToken } = await signUpAndLogin(
+        'Ana',
+        'ana@teste.com',
+      );
+
+      const res = await getMe(accessToken).expect(200);
+
+      expect(Object.keys(res.body).sort()).toEqual(
+        ['createdAt', 'email', 'id', 'name', 'role'].sort(),
+      );
+      expect(res.body).toEqual({
+        id: user.id,
+        name: 'Ana',
+        email: 'ana@teste.com',
+        role: 'CUSTOMER',
+        createdAt: user.createdAt,
+      });
+    });
+
+    it('retorna o perfil do dono do token', async () => {
+      await signUpAndLogin('Ana', 'ana@teste.com');
+      const { accessToken } = await signUpAndLogin('Bia', 'bia@teste.com');
+
+      const res = await getMe(accessToken).expect(200);
+
+      expect(res.body.email).toBe('bia@teste.com');
+    });
+
+    it('responde 401 sem token', async () => {
+      await request(app.getHttpServer()).get('/users/me').expect(401);
+    });
+  });
 });
