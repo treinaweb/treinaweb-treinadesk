@@ -14,20 +14,28 @@ npm run build            # nest build -> dist/ (apaga dist antes)
 npm run lint             # oxlint src/ test/  (não é ESLint)
 npm run format           # prettier (singleQuote, trailingComma: all)
 
-npm test                              # testes unitários (*.spec.ts em src/)
-npx jest src/app.controller.spec.ts   # um arquivo
-npx jest -t "nome do teste"           # um teste pelo nome
-npm run test:e2e                      # e2e (test/*.e2e-spec.ts, config em test/jest-e2e.json)
+npm test                                   # testes unitários (*.spec.ts)
+npm test -- src/app.controller.spec.ts     # um arquivo
+npm test -- -t "nome do teste"             # um teste pelo nome
+npm run test:e2e                           # e2e (test/*.e2e-spec.ts, config em test/jest-e2e.json)
 
 npx prisma generate                   # regenera o client em src/generated/prisma
 npx prisma migrate dev --name <nome>  # cria/aplica migration em prisma/migrations
+npm run seed                          # cria o ADMIN inicial (ADMIN_EMAIL/ADMIN_PASSWORD); idempotente
 ```
+
+- **Node >= 24.9 obrigatório** (há `.nvmrc`/`engines`). O NestJS 12 é ESM-only e o Jest só carrega ESM via `require` com `--experimental-vm-modules` no Node 24.9+; por isso os scripts de teste chamam `node --experimental-vm-modules node_modules/jest/bin/jest.js`. Não use `npx jest` direto.
+- Os configs do Jest mapeiam imports relativos `*.js` para o `.ts` (necessário para o client do Prisma gerado em `nodenext`).
+- **Os e2e rodam contra o banco de `DATABASE_URL` (carregado do `.env` via `setupFiles`) e apagam a tabela `users`** — aponte para um banco de desenvolvimento/teste.
 
 ## Arquitetura e particularidades
 
 - **Prisma 7 com driver adapter**: o client é gerado pelo provider `prisma-client` em `src/generated/prisma` (ignorado pelo git — rode `npx prisma generate` após clonar ou alterar o schema). Importe de `../generated/prisma/client`, não de `@prisma/client`.
 - A configuração do CLI do Prisma fica em `prisma7.config.ts` (schema, pasta de migrations e `DATABASE_URL`); o `datasource` do `schema.prisma` não tem `url`.
-- `PrismaService` (`src/prisma/`) estende o `PrismaClient` usando `@prisma/adapter-pg` com `process.env.DATABASE_URL`. `PrismaModule` exporta o service; módulos de feature devem importar `PrismaModule`.
+- `PrismaService` (`src/prisma/`) estende o `PrismaClient` usando `@prisma/adapter-pg` com `process.env.DATABASE_URL`. `PrismaModule` é `@Global()` e importado só no `AppModule`; módulos de feature injetam `PrismaService` sem importá-lo.
+- Validação global: `ValidationPipe` (`whitelist`, `forbidNonWhitelisted`, `transform`) registrado como `APP_PIPE` no `AppModule` — vale também nos e2e, que não passam pelo `main.ts`. Propriedades não declaradas no DTO retornam 400.
+- Seed em `prisma/seed.ts` (executado com `tsx`, configurado em `migrations.seed` do `prisma7.config.ts`); a lógica fica em `src/users/seed-admin.ts`.
+- `tsconfig.json` tem `rootDir: "./"` (exigido pelo TS 6 para o ts-jest); o build usa `tsconfig.build.json` com `rootDir: "./src"`.
 - Variáveis de ambiente vêm de `.env` via `import 'dotenv/config'` em `src/main.ts` (não há `@nestjs/config`).
 - TS com `module: nodenext` e `strict: true` (mas `strictPropertyInitialization: false`).
 
@@ -37,6 +45,14 @@ npx prisma migrate dev --name <nome>  # cria/aplica migration em prisma/migratio
 - Status de ticket: `OPEN → IN_PROGRESS → WAITING_CUSTOMER / RESOLVED → CLOSED`, com transições restritas por papel conforme a tabela do PRD. `OPEN → IN_PROGRESS` só pela rota de atribuição; `WAITING_CUSTOMER → IN_PROGRESS` é automático quando o cliente dono comenta; transições para `CLOSED` preenchem `closedAt`; ticket `CLOSED` não aceita mudança de status nem comentário.
 - Convenção de erros HTTP: 401 sem/token inválido; 403 papel sem acesso à rota; **404 para registro que o usuário não pode ver** (não 403); 409 conflito (e-mail duplicado, alteração concorrente); 422 regra de negócio (transição inválida, categoria inativa); 429 rate limit.
 - Não funcionais: hash de senha resistente a força bruta; access token de 15 min + refresh token opaco com rotação e detecção de reutilização; rate limit global e nas rotas de auth; nenhuma resposta/log com senha, hash ou tokens; OpenAPI apenas fora de produção; e2e contra PostgreSQL real.
+
+## Fluxo de trabalho das changes
+
+1. Para cada cenário da spec, **a tarefa de teste vem antes da tarefa de implementação**.
+2. A última tarefa de toda change roda `npm test` e `npx tsc --noEmit` (e `npm run test:e2e`).
+3. Specs, requisitos e cenários em **português**, mantendo as palavras-chave SHALL, MUST, GIVEN, WHEN, THEN e AND — o validador procura SHALL ou MUST.
+4. Specs descrevem comportamento observável (rota, status HTTP, dados da resposta). Bibliotecas, nomes de classe e modelos Prisma ficam no `design.md`.
+5. Uma change ativa por vez em `openspec/changes/`.
 
 ## Fluxo com OpenSpec
 
