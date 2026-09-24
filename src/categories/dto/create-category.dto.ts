@@ -1,5 +1,5 @@
 import { IsString, Length } from 'class-validator';
-import { Trim } from './trim';
+import { Trim } from '../../common/dto/trim';
 
 export class CreateCategoryDto {
   @Trim()

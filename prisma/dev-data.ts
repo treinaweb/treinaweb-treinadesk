@@ -1,4 +1,9 @@
-import { PrismaClient, Role } from '../src/generated/prisma/client';
+import {
+  PrismaClient,
+  Role,
+  TicketPriority,
+  TicketStatus,
+} from '../src/generated/prisma/client';
 import { PasswordHasher } from '../src/users/password-hasher';
 
 // Dados de teste para desenvolvimento local, cobrindo as specs já implementadas.
@@ -26,10 +31,84 @@ const categories: { name: string; active: boolean }[] = [
   { name: 'Legado', active: false },
 ];
 
+// tickets: um em cada status, de Ana e Bruno (clientes A e B), com Bia e
+// Carla (atendentes S1 e S2). Ids fixos para o upsert ser idempotente.
+const tickets: {
+  id: string;
+  title: string;
+  description: string;
+  priority: TicketPriority;
+  status: TicketStatus;
+  category: string;
+  customer: string;
+  assignee: string | null;
+}[] = [
+  {
+    id: 'd0000000-0000-4000-8000-000000000001',
+    title: 'Cobrança duplicada',
+    description: 'Fui cobrada duas vezes na fatura de março.',
+    priority: TicketPriority.HIGH,
+    status: TicketStatus.OPEN,
+    category: 'Financeiro',
+    customer: 'ana@teste.com',
+    assignee: null,
+  },
+  {
+    id: 'd0000000-0000-4000-8000-000000000002',
+    title: 'Nota fiscal errada',
+    description: 'A nota fiscal de abril saiu com o CNPJ errado.',
+    priority: TicketPriority.MEDIUM,
+    status: TicketStatus.OPEN,
+    category: 'Financeiro',
+    customer: 'bruno@teste.com',
+    assignee: null,
+  },
+  {
+    id: 'd0000000-0000-4000-8000-000000000003',
+    title: 'Senha expirada',
+    description: 'Não consigo entrar no sistema depois que a senha expirou.',
+    priority: TicketPriority.URGENT,
+    status: TicketStatus.IN_PROGRESS,
+    category: 'Acesso',
+    customer: 'ana@teste.com',
+    assignee: 'bia@teste.com',
+  },
+  {
+    id: 'd0000000-0000-4000-8000-000000000004',
+    title: 'Relatório não carrega',
+    description: 'O relatório mensal fica carregando e não abre.',
+    priority: TicketPriority.MEDIUM,
+    status: TicketStatus.WAITING_CUSTOMER,
+    category: 'Suporte Técnico',
+    customer: 'bruno@teste.com',
+    assignee: 'carla@teste.com',
+  },
+  {
+    id: 'd0000000-0000-4000-8000-000000000005',
+    title: 'Erro ao exportar planilha',
+    description: 'A exportação para planilha gera um arquivo vazio.',
+    priority: TicketPriority.LOW,
+    status: TicketStatus.RESOLVED,
+    category: 'Suporte Técnico',
+    customer: 'ana@teste.com',
+    assignee: 'bia@teste.com',
+  },
+  {
+    id: 'd0000000-0000-4000-8000-000000000006',
+    title: 'Boleto vencido',
+    description: 'Preciso de um novo boleto, o anterior venceu.',
+    priority: TicketPriority.LOW,
+    status: TicketStatus.CLOSED,
+    category: 'Financeiro',
+    customer: 'bruno@teste.com',
+    assignee: 'carla@teste.com',
+  },
+];
+
 /**
  * Cria ou restaura os dados de teste. Idempotente: registros já existentes
- * voltam ao estado descrito aqui (papel, senha, status da categoria), para
- * que as credenciais documentadas sempre funcionem.
+ * voltam ao estado descrito aqui (papel, senha, status da categoria, status e
+ * atendente do ticket), para que as credenciais documentadas sempre funcionem.
  */
 export async function seedDevData(
   prisma: PrismaClient,
@@ -53,5 +132,35 @@ export async function seedDevData(
     });
   }
 
-  return { users: users.length, categories: categories.length };
+  const userIds = new Map(
+    (await prisma.user.findMany({ select: { id: true, email: true } })).map(
+      (u) => [u.email, u.id],
+    ),
+  );
+  const categoryIds = new Map(
+    (await prisma.category.findMany({ select: { id: true, name: true } })).map(
+      (c) => [c.name, c.id],
+    ),
+  );
+
+  for (const { id, category, customer, assignee, ...ticket } of tickets) {
+    const data = {
+      ...ticket,
+      categoryId: categoryIds.get(category)!,
+      customerId: userIds.get(customer)!,
+      assigneeId: assignee && userIds.get(assignee)!,
+      closedAt: ticket.status === TicketStatus.CLOSED ? new Date() : null,
+    };
+    await prisma.ticket.upsert({
+      where: { id },
+      update: data,
+      create: { id, ...data },
+    });
+  }
+
+  return {
+    users: users.length,
+    categories: categories.length,
+    tickets: tickets.length,
+  };
 }

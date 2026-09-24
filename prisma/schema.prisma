@@ -27,7 +27,9 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  refreshTokens RefreshToken[]
+  refreshTokens   RefreshToken[]
+  ticketsOpened   Ticket[]       @relation("TicketCustomer")
+  ticketsAssigned Ticket[]       @relation("TicketAssignee")
 
   @@map("users")
 }
@@ -53,5 +55,45 @@ model Category {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  tickets Ticket[]
+
   @@map("categories")
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Ticket {
+  id          String         @id @default(uuid()) @db.Uuid
+  title       String         @db.VarChar(120)
+  description String         @db.Text
+  status      TicketStatus   @default(OPEN)
+  priority    TicketPriority
+  categoryId  String         @map("category_id") @db.Uuid
+  customerId  String         @map("customer_id") @db.Uuid
+  assigneeId  String?        @map("assignee_id") @db.Uuid
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  closedAt    DateTime?      @map("closed_at")
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  customer User     @relation("TicketCustomer", fields: [customerId], references: [id], onDelete: Restrict)
+  assignee User?    @relation("TicketAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
+
+  @@index([customerId])
+  @@index([assigneeId])
+  @@index([status, createdAt])
+  @@map("tickets")
 }

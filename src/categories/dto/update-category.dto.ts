@@ -1,5 +1,5 @@
 import { IsBoolean, IsString, Length, ValidateIf } from 'class-validator';
-import { Trim } from './trim';
+import { Trim } from '../../common/dto/trim';
 
 // Campos ausentes não são alterados; null é rejeitado (ao contrário de @IsOptional).
 const IfPresent = () => ValidateIf((_, value) => value !== undefined);

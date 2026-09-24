@@ -83,6 +83,7 @@ describe('Categories (e2e)', () => {
   });
 
   beforeEach(async () => {
+    await prisma.ticket.deleteMany();
     await prisma.category.deleteMany();
     await prisma.user.deleteMany();
     await createUser('Admin', 'admin@treinadesk.com', Role.ADMIN);
@@ -94,6 +95,7 @@ describe('Categories (e2e)', () => {
   });
 
   afterAll(async () => {
+    await prisma.ticket.deleteMany();
     await prisma.category.deleteMany();
     await prisma.user.deleteMany();
     await app.close();
