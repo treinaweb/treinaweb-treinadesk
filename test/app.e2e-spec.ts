@@ -17,6 +17,7 @@ describe('AppController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     prisma = app.get(PrismaService);
+    await prisma.category.deleteMany();
     await prisma.user.deleteMany();
   });
 
@@ -46,6 +47,7 @@ describe('AppController (e2e)', () => {
   });
 
   afterEach(async () => {
+    await prisma.category.deleteMany();
     await prisma.user.deleteMany();
     await app.close();
   });

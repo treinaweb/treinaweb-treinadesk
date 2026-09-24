@@ -21,12 +21,12 @@ npm run test:e2e                           # e2e (test/*.e2e-spec.ts, config em 
 
 npx prisma generate                   # regenera o client em src/generated/prisma
 npx prisma migrate dev --name <nome>  # cria/aplica migration em prisma/migrations
-npm run seed                          # cria o ADMIN inicial (ADMIN_EMAIL/ADMIN_PASSWORD); idempotente
+npm run seed                          # ADMIN inicial (ADMIN_EMAIL/ADMIN_PASSWORD) + dados de teste; idempotente
 ```
 
 - **Node >= 24.9 obrigatório** (há `.nvmrc`/`engines`). O NestJS 12 é ESM-only e o Jest só carrega ESM via `require` com `--experimental-vm-modules` no Node 24.9+; por isso os scripts de teste chamam `node --experimental-vm-modules node_modules/jest/bin/jest.js`. Não use `npx jest` direto.
 - Os configs do Jest mapeiam imports relativos `*.js` para o `.ts` (necessário para o client do Prisma gerado em `nodenext`).
-- **Os e2e rodam contra o banco de `DATABASE_URL` (carregado do `.env` via `setupFiles`) e apagam a tabela `users` (e, em cascata, `refresh_tokens`)** — aponte para um banco de desenvolvimento/teste.
+- **Os e2e rodam contra o banco de `DATABASE_URL` (carregado do `.env` via `setupFiles`) e apagam as tabelas `categories` e `users` (e, em cascata, `refresh_tokens`)** — aponte para um banco de desenvolvimento/teste.
 - Após `prisma migrate dev`, rode `npx prisma generate`: no Prisma 7 o migrate não regenera o client.
 
 ## Arquitetura e particularidades
@@ -36,8 +36,10 @@ npm run seed                          # cria o ADMIN inicial (ADMIN_EMAIL/ADMIN_
 - `PrismaService` (`src/prisma/`) estende o `PrismaClient` usando `@prisma/adapter-pg` com `process.env.DATABASE_URL`. `PrismaModule` é `@Global()` e importado só no `AppModule`; módulos de feature injetam `PrismaService` sem importá-lo.
 - Validação global: `ValidationPipe` (`whitelist`, `forbidNonWhitelisted`, `transform`) registrado como `APP_PIPE` no `AppModule` — vale também nos e2e, que não passam pelo `main.ts`. Propriedades não declaradas no DTO retornam 400.
 - **Autenticação obrigatória por padrão**: `JwtAuthGuard` é `APP_GUARD` (registrado no `AuthModule`). Toda rota nova exige `Authorization: Bearer <accessToken>`; só rotas marcadas com `@Public()` (`src/auth/public.decorator.ts`) ficam abertas — hoje `POST /users`, `POST /auth/login` e `POST /auth/refresh`. Use `@CurrentUser()` para obter `{ id, email, role }` do token.
+- **Autorização por papel**: `@Roles(Role.ADMIN, ...)` (`src/auth/roles.decorator.ts`) restringe a rota; o `RolesGuard` é um segundo `APP_GUARD`, registrado no `AuthModule` **depois** do `JwtAuthGuard` (a ordem garante `401` sem token antes de `403` por papel — não inverta). Rota sem `@Roles` = qualquer autenticado. O papel vem do access token, não do banco.
+- Paginação: use `PaginationQueryDto` (`page` padrão 1, `limit` padrão 20, máx. 100) e `Paginated<T>` de `src/common/dto/`, com `$transaction([findMany, count])`.
 - Access token JWT HS256 (`JWT_ACCESS_SECRET` obrigatória, `JWT_ACCESS_EXPIRES_IN` padrão `15m`); refresh token opaco guardado só como SHA-256 em `refresh_tokens`, com validade de `REFRESH_TOKEN_TTL_DAYS` (padrão 7). A rotação usa compare-and-set (`updateMany` + `count === 0`) em transação e não lança dentro dela, para que a revogação por reutilização seja comitada.
-- Seed em `prisma/seed.ts` (executado com `tsx`, configurado em `migrations.seed` do `prisma7.config.ts`); a lógica fica em `src/users/seed-admin.ts`.
+- Seed em `prisma/seed.ts` (executado com `tsx`, configurado em `migrations.seed` do `prisma7.config.ts`); a lógica do ADMIN fica em `src/users/seed-admin.ts`. Em seguida, fora de `NODE_ENV=production`, roda `prisma/dev-data.ts`: dados de teste que cobrem as specs já implementadas (usuários de cada papel com a senha `senhaSegura123` — ex.: `ana@teste.com` CUSTOMER, `bia@teste.com` SUPPORT, `diego@teste.com` ADMIN — e categorias ativas e a inativa `Legado`). É idempotente e restaura papel, senha e status ao estado descrito no arquivo.
 - `tsconfig.json` tem `rootDir: "./"` (exigido pelo TS 6 para o ts-jest); o build usa `tsconfig.build.json` com `rootDir: "./src"`.
 - Variáveis de ambiente vêm de `.env` via `import 'dotenv/config'` em `src/main.ts` (não há `@nestjs/config`).
 - TS com `module: nodenext` e `strict: true` (mas `strictPropertyInitialization: false`).
@@ -53,9 +55,10 @@ npm run seed                          # cria o ADMIN inicial (ADMIN_EMAIL/ADMIN_
 
 1. Para cada cenário da spec, **a tarefa de teste vem antes da tarefa de implementação**.
 2. A última tarefa de toda change roda `npm test` e `npx tsc --noEmit` (e `npm run test:e2e`).
-3. Specs, requisitos e cenários em **português**, mantendo as palavras-chave SHALL, MUST, GIVEN, WHEN, THEN e AND — o validador procura SHALL ou MUST.
-4. Specs descrevem comportamento observável (rota, status HTTP, dados da resposta). Bibliotecas, nomes de classe e modelos Prisma ficam no `design.md`.
-5. Uma change ativa por vez em `openspec/changes/`.
+3. **Ao final da execução de toda change** (depois da verificação, já que os e2e apagam o banco): acrescente em `prisma/dev-data.ts` os dados de teste das entidades e cenários das specs novas — usando os nomes dos cenários quando possível — e rode `npm run seed`. Inclua isso como tarefa no `tasks.md` de cada change.
+4. Specs, requisitos e cenários em **português**, mantendo as palavras-chave SHALL, MUST, GIVEN, WHEN, THEN e AND — o validador procura SHALL ou MUST.
+5. Specs descrevem comportamento observável (rota, status HTTP, dados da resposta). Bibliotecas, nomes de classe e modelos Prisma ficam no `design.md`.
+6. Uma change ativa por vez em `openspec/changes/`.
 
 ## Fluxo com OpenSpec
 

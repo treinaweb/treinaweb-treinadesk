@@ -1,0 +1,55 @@
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import type { AuthenticatedUser } from '../auth/authenticated-user';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../generated/prisma/client';
+import {
+  ActiveCategoryView,
+  CategoriesService,
+  CategoryView,
+} from './categories.service';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+
+// Sem DELETE: desativar (active: false) substitui a exclusão.
+@Controller('categories')
+export class CategoriesController {
+  constructor(private readonly categoriesService: CategoriesService) {}
+
+  @Get()
+  findAll(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<CategoryView[] | ActiveCategoryView[]> {
+    return this.categoriesService.findAll(user.role);
+  }
+
+  @Roles(Role.ADMIN)
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  create(@Body() dto: CreateCategoryDto): Promise<CategoryView> {
+    return this.categoriesService.create(dto);
+  }
+
+  @Roles(Role.ADMIN)
+  @Patch(':id')
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateCategoryDto,
+  ): Promise<CategoryView> {
+    if (dto.name === undefined && dto.active === undefined) {
+      throw new BadRequestException('Informe name e/ou active');
+    }
+    return this.categoriesService.update(id, dto);
+  }
+}

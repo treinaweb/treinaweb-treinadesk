@@ -59,10 +59,12 @@ describe('Auth (e2e)', () => {
   });
 
   beforeEach(async () => {
+    await prisma.category.deleteMany();
     await prisma.user.deleteMany();
   });
 
   afterAll(async () => {
+    await prisma.category.deleteMany();
     await prisma.user.deleteMany();
     await app.close();
   });

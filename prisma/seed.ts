@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { seedAdmin } from '../src/users/seed-admin';
+import { DEV_PASSWORD, seedDevData } from './dev-data';
 
 async function main() {
   const prisma = new PrismaClient({
@@ -11,6 +12,15 @@ async function main() {
   try {
     const admin = await seedAdmin(prisma, process.env);
     console.log(`Administrador disponível: ${admin.email} (${admin.role})`);
+
+    if (process.env.NODE_ENV === 'production') {
+      console.log('NODE_ENV=production: dados de teste ignorados');
+      return;
+    }
+    const dev = await seedDevData(prisma);
+    console.log(
+      `Dados de teste: ${dev.users} usuários (senha ${DEV_PASSWORD}) e ${dev.categories} categorias`,
+    );
   } finally {
     await prisma.$disconnect();
   }

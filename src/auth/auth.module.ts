@@ -5,6 +5,7 @@ import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { RolesGuard } from './roles.guard';
 
 function jwtOptions(): JwtModuleOptions {
   const secret = process.env.JWT_ACCESS_SECRET;
@@ -26,6 +27,13 @@ function jwtOptions(): JwtModuleOptions {
 @Module({
   imports: [UsersModule, JwtModule.registerAsync({ useFactory: jwtOptions })],
   controllers: [AuthController],
-  providers: [AuthService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
+  // Guards globais rodam na ordem de registro: o RolesGuard precisa do
+  // request.user gravado pelo JwtAuthGuard, e sem token a resposta deve ser
+  // 401 (não 403). Mantenha os dois aqui, nesta ordem.
+  providers: [
+    AuthService,
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
 })
 export class AuthModule {}
