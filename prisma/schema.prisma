@@ -30,6 +30,7 @@ model User {
   refreshTokens   RefreshToken[]
   ticketsOpened   Ticket[]       @relation("TicketCustomer")
   ticketsAssigned Ticket[]       @relation("TicketAssignee")
+  comments        Comment[]
 
   @@map("users")
 }
@@ -92,8 +93,25 @@ model Ticket {
   customer User     @relation("TicketCustomer", fields: [customerId], references: [id], onDelete: Restrict)
   assignee User?    @relation("TicketAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
 
+  comments Comment[]
+
   @@index([customerId])
   @@index([assigneeId])
   @@index([status, createdAt])
   @@map("tickets")
+}
+
+model Comment {
+  id         String   @id @default(uuid()) @db.Uuid
+  ticketId   String   @map("ticket_id") @db.Uuid
+  authorId   String   @map("author_id") @db.Uuid
+  body       String   @db.VarChar(5000)
+  isInternal Boolean  @default(false) @map("is_internal")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User   @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([ticketId, createdAt])
+  @@map("comments")
 }
