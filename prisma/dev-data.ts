@@ -105,10 +105,57 @@ const tickets: {
   },
 ];
 
+// comments: a conversa de "Senha expirada" (Ana e Bia, com uma nota interna
+// que Ana não pode ver) e um comentário no ticket fechado de Bruno.
+// "Relatório não carrega" fica sem comentário de Bruno para exercitar a
+// retomada de WAITING_CUSTOMER. createdAt fixo mantém a ordem da listagem.
+const comments: {
+  id: string;
+  ticketId: string;
+  author: string;
+  body: string;
+  isInternal: boolean;
+  createdAt: Date;
+}[] = [
+  {
+    id: 'e0000000-0000-4000-8000-000000000001',
+    ticketId: 'd0000000-0000-4000-8000-000000000003',
+    author: 'ana@teste.com',
+    body: 'Segue o comprovante',
+    isInternal: false,
+    createdAt: new Date('2026-09-20T10:00:00Z'),
+  },
+  {
+    id: 'e0000000-0000-4000-8000-000000000002',
+    ticketId: 'd0000000-0000-4000-8000-000000000003',
+    author: 'bia@teste.com',
+    body: 'Estamos verificando',
+    isInternal: false,
+    createdAt: new Date('2026-09-20T10:05:00Z'),
+  },
+  {
+    id: 'e0000000-0000-4000-8000-000000000003',
+    ticketId: 'd0000000-0000-4000-8000-000000000003',
+    author: 'bia@teste.com',
+    body: 'Cliente já pediu estorno antes',
+    isInternal: true,
+    createdAt: new Date('2026-09-20T10:10:00Z'),
+  },
+  {
+    id: 'e0000000-0000-4000-8000-000000000004',
+    ticketId: 'd0000000-0000-4000-8000-000000000006',
+    author: 'bruno@teste.com',
+    body: 'Obrigado, o novo boleto chegou',
+    isInternal: false,
+    createdAt: new Date('2026-09-20T11:00:00Z'),
+  },
+];
+
 /**
  * Cria ou restaura os dados de teste. Idempotente: registros já existentes
  * voltam ao estado descrito aqui (papel, senha, status da categoria, status e
- * atendente do ticket), para que as credenciais documentadas sempre funcionem.
+ * atendente do ticket, texto e visibilidade dos comentários), para que as
+ * credenciais documentadas sempre funcionem.
  */
 export async function seedDevData(
   prisma: PrismaClient,
@@ -158,9 +205,19 @@ export async function seedDevData(
     });
   }
 
+  for (const { id, author, ...comment } of comments) {
+    const data = { ...comment, authorId: userIds.get(author)! };
+    await prisma.comment.upsert({
+      where: { id },
+      update: data,
+      create: { id, ...data },
+    });
+  }
+
   return {
     users: users.length,
     categories: categories.length,
     tickets: tickets.length,
+    comments: comments.length,
   };
 }

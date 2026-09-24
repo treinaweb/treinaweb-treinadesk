@@ -1,114 +1,188 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# TreinaDesk API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST de helpdesk (tickets de suporte) construída com **NestJS 12 + Prisma 7 + PostgreSQL** e TypeScript 6.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+> **Autor:** Wesley Gado ([wesleygado@gmail.com](mailto:wesleygado@gmail.com))
+> Este repositório é o projeto prático do curso de **desenvolvimento de APIs com SDD (Spec-Driven Development)**, criado e mantido por mim. Esta é a primeira versão, publicada no meu repositório pessoal.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## A ideia do projeto
 
-## Project setup
+O objetivo não é só entregar uma API de helpdesk, e sim mostrar **como construir uma API guiada por especificações**, com um agente de IA como par de programação, sem abrir mão de rigor.
+
+O fluxo que o curso ensina é:
+
+1. **PRD como fonte de verdade**: [`openspec/docs/prd.md`](openspec/docs/prd.md) define papéis, matriz de permissões, fluxo de status, convenção de erros HTTP e requisitos não funcionais.
+2. **Uma change por vez**: cada funcionalidade vira uma change do [OpenSpec](https://github.com/Fission-AI/OpenSpec) em `openspec/changes/<change>/`, com:
+   - `proposal.md`: o porquê e o escopo;
+   - `specs/`: requisitos e cenários em português (SHALL/MUST, GIVEN/WHEN/THEN) descrevendo só **comportamento observável** (rota, status HTTP, corpo da resposta);
+   - `design.md`: decisões técnicas (bibliotecas, modelos Prisma, classes);
+   - `tasks.md`: tarefas em que **o teste de cada cenário vem antes da implementação**.
+3. **Propor → aplicar → arquivar**: `/opsx:propose` só gera artefatos de planejamento. `/opsx:apply` implementa. `/opsx:archive` consolida as specs em `openspec/specs/`.
+4. **Verificação no fim de toda change**: `npm test`, `npx tsc --noEmit` e `npm run test:e2e` contra PostgreSQL real. Depois, os dados de teste do cenário entram em `prisma/dev-data.ts`.
+5. **Contexto para o agente**: o [`CLAUDE.md`](CLAUDE.md) guarda as convenções e armadilhas do projeto, para que cada nova change siga as mesmas regras.
+
+### Changes já implementadas
+
+| # | Change | O que entrega |
+|---|---|---|
+| 001 | `user-management` | Cadastro público de clientes, ADMIN inicial via seed, gestão da equipe e de papéis |
+| 002 | `authentication` | Login, access token JWT, refresh token opaco com rotação e detecção de reutilização, logout |
+| 003 | `role-authorization` | Autorização por papel (`CUSTOMER`, `SUPPORT`, `ADMIN`) e categorias com ativação/desativação |
+| 004 | `tickets` | Abertura, visibilidade por papel, atribuição e fluxo de status |
+| 005 | `comments` | Comentários públicos, notas internas e retomada automática `WAITING_CUSTOMER → IN_PROGRESS` |
+
+O histórico completo está em `openspec/changes/archive/`, e as specs consolidadas em `openspec/specs/`.
+
+---
+
+## Domínio
+
+- **Papéis:** `CUSTOMER` (abre e acompanha os próprios tickets), `SUPPORT` (atende a fila e os tickets atribuídos a ele), `ADMIN` (vê tudo, gerencia usuários e categorias).
+- **Status do ticket:** `OPEN → IN_PROGRESS → WAITING_CUSTOMER / RESOLVED → CLOSED`, com transições restritas por papel (tabela no PRD).
+- **Convenção de erros:** `401` sem token ou token inválido · `403` papel sem acesso à rota · `404` registro que o usuário não pode ver (nunca `403`) · `409` conflito ou alteração concorrente · `422` regra de negócio.
+
+### Rotas
+
+| Método | Rota | Acesso |
+|---|---|---|
+| `POST` | `/users` | Público (cadastro de cliente) |
+| `POST` | `/users/staff` · `GET /users` · `PATCH /users/:id/role` | ADMIN |
+| `GET` | `/users/me` | Autenticado |
+| `POST` | `/auth/login` · `/auth/refresh` | Público |
+| `POST` | `/auth/logout` | Autenticado |
+| `GET` / `POST` / `PATCH` | `/categories`, `/categories/:id` | Leitura autenticada; escrita ADMIN |
+| `POST` / `GET` | `/tickets`, `/tickets/:id` | Por papel, com visibilidade por registro |
+| `PATCH` | `/tickets/:id/assign` · `/tickets/:id/status` | Conforme a matriz do PRD |
+| `POST` / `GET` | `/tickets/:ticketId/comments` | Conforme a matriz do PRD |
+
+---
+
+## Como rodar
+
+**Pré-requisitos:** Node **>= 24.9** (veja `.nvmrc`) e PostgreSQL.
 
 ```bash
-$ npm install
+npm install
+npx prisma generate                  # gera o client em src/generated/prisma (ignorado pelo git)
+npx prisma migrate dev               # aplica as migrations
+npm run seed                         # ADMIN inicial + dados de teste (idempotente)
+npm run start:dev                    # http://localhost:3000
 ```
 
-## Compile and run the project
+Crie um `.env` na raiz com:
+
+```dotenv
+DATABASE_URL=postgresql://usuario:senha@localhost:5432/treinadesk
+JWT_ACCESS_SECRET=troque-por-um-segredo-longo-e-aleatorio
+JWT_ACCESS_EXPIRES_IN=15m
+REFRESH_TOKEN_TTL_DAYS=7
+ADMIN_EMAIL=admin@exemplo.com
+ADMIN_PASSWORD=uma-senha-forte
+PORT=3000
+```
+
+Fora de produção, o seed cria usuários de teste com a senha `senhaSegura123`: `ana@teste.com` (CUSTOMER), `bia@teste.com` (SUPPORT) e `diego@teste.com` (ADMIN).
+
+### Testes
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm test                  # unitários
+npm run test:e2e          # e2e contra o PostgreSQL de DATABASE_URL
+npx tsc --noEmit          # checagem de tipos
+npm run lint              # oxlint
 ```
 
-## Run tests
+> ⚠️ Os testes e2e **apagam** as tabelas `tickets`, `categories` e `users` (e, em cascata, `refresh_tokens` e `comments`). Aponte `DATABASE_URL` para um banco de desenvolvimento ou de teste e rode `npm run seed` depois.
 
-```bash
-# unit tests
-$ npm run test
+Use sempre os scripts do `package.json`, e não `npx jest` direto: o NestJS 12 é ESM-only e o Jest precisa de `--experimental-vm-modules`.
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
+## Pontos fortes
+
+- **Especificação antes do código**: cada comportamento tem requisito, cenário e teste rastreáveis (PRD → spec → tarefa → teste → implementação).
+- **Autenticação obrigatória por padrão**: `JwtAuthGuard` global. Só rotas marcadas com `@Public()` ficam abertas, então esquecer um guard não expõe uma rota.
+- **Ordem correta dos guards**: `401` (autenticação) é avaliado antes de `403` (papel).
+- **Proteção contra BOLA/IDOR**: toda rota de ticket passa por `findVisibleOrFail`. Registro inexistente e invisível respondem igual (`404`), sem vazar a existência do dado.
+- **Senhas com Argon2id** e validação de tamanho (8 a 128).
+- **Refresh token opaco** guardado só como SHA-256, com rotação por compare-and-set e revogação da família em caso de reutilização.
+- **Controle de concorrência otimista**: escritas em ticket usam `updateMany` condicionado ao estado lido (`count === 0` → `409`).
+- **Regras de negócio isoladas e puras**: `canTransition` e `commentPolicy` são funções testáveis sem banco.
+- **Sem vazamento de dados sensíveis**: respostas usam `select` explícito (`ticketSelect`, `userSummarySelect`), nunca `include` do `User`.
+- **Validação estrita**: `ValidationPipe` global com `whitelist` e `forbidNonWhitelisted`. Campos não declarados retornam `400`.
+- **Notas internas filtradas na consulta** (`where`), não em memória.
+- **Testes e2e contra PostgreSQL real**, não contra mocks.
+- **Stack atual**: NestJS 12 ESM, Prisma 7 com driver adapter (`@prisma/adapter-pg`), TypeScript 6 `strict`.
+
+---
+
+## O que revisar antes de ir para produção
+
+Esta versão é **didática**. Os itens abaixo estão fora do que foi implementado até aqui ou precisam de endurecimento:
+
+### Requisitos do PRD ainda pendentes
+- [ ] **Rate limiting** global e específico em `/auth/login` e `/auth/refresh` (ex.: `@nestjs/throttler` com armazenamento compartilhado, como Redis, em múltiplas instâncias). Hoje o login não tem proteção contra força bruta além do custo do Argon2.
+- [ ] **Documentação OpenAPI** (Swagger), habilitada apenas fora de produção.
+- [ ] **Testes e2e de comentários**: a change 005 tem testes unitários, mas ainda não tem `test/comments.e2e-spec.ts`.
+
+### Segurança
+- [ ] Cabeçalhos HTTP de segurança (`helmet`) e **CORS** explícito por origem.
+- [ ] Limite de tamanho do corpo da requisição e `trust proxy` corretos atrás de balanceador.
+- [ ] Gestão de segredos (`JWT_ACCESS_SECRET`, credenciais do banco) em cofre ou variáveis do provedor, não em `.env`. Também um plano de **rotação da chave JWT** (hoje HS256 com segredo único; considerar chaves assimétricas e `kid`).
+- [ ] Revisar a política de senha (lista de senhas vazadas, por exemplo) e bloqueio progressivo por conta.
+- [ ] Remover a senha fixa dos dados de teste e garantir que `prisma/dev-data.ts` **nunca** rode em produção (hoje depende de `NODE_ENV=production`).
+- [ ] Auditoria de dependências (`npm audit`) e atualizações automatizadas.
+
+### Operação e observabilidade
+- [ ] **Logs estruturados** (JSON) com correlação por request id, garantindo que senhas, hashes e tokens nunca sejam registrados.
+- [ ] **Health checks** (`/health` de liveness e readiness com verificação do banco).
+- [ ] `enableShutdownHooks()` e encerramento gracioso do pool do Prisma.
+- [ ] Filtro global de exceções para padronizar o corpo de erro e não expor detalhes internos (erros do Prisma, stack).
+- [ ] Métricas e tracing (ex.: OpenTelemetry).
+- [ ] Validação das variáveis de ambiente na inicialização (falhar cedo se faltar alguma).
+
+### Banco de dados
+- [ ] Usar `prisma migrate deploy` (não `migrate dev`) no pipeline de produção.
+- [ ] **Job de limpeza** de `refresh_tokens` expirados ou revogados.
+- [ ] Revisar os índices para as consultas de listagem (fila do SUPPORT, filtros por status) com volume real.
+- [ ] Pool de conexões dimensionado e backup/restore testados.
+- [ ] Banco **isolado** para os e2e, para que eles nunca apontem para um banco com dados reais.
+
+### Entrega
+- [ ] Pipeline de CI rodando lint, `tsc --noEmit`, testes unitários e e2e (PostgreSQL em container).
+- [ ] `Dockerfile` multi-stage e `docker-compose` para desenvolvimento.
+- [ ] Arquivo `.env.example` versionado.
+- [ ] Definir licença (hoje `UNLICENSED` no `package.json`) e preencher `author`/`description`.
+
+### Fora do escopo do MVP (por decisão do PRD)
+Anexos, envio de e-mail, SLA, múltiplas empresas, frontend, recuperação de senha e exclusão de dados (LGPD). Todos são necessários em um produto real.
+
+---
+
+## Estrutura
+
+```
+openspec/
+  docs/prd.md            # requisitos do produto (fonte de verdade)
+  specs/                 # specs consolidadas por capacidade
+  changes/archive/       # histórico das changes (proposal, specs, design, tasks)
+prisma/
+  schema.prisma          # modelos e enums
+  migrations/
+  seed.ts, dev-data.ts   # ADMIN inicial + dados de teste
+src/
+  auth/                  # login, refresh, guards, @Public, @Roles, @CurrentUser
+  users/                 # cadastro, equipe, papéis, hash de senha
+  categories/
+  tickets/               # visibilidade, transições, atribuição
+  comments/              # comentários e notas internas
+  common/dto/            # paginação e utilitários de validação
+  prisma/                # PrismaService (driver adapter pg)
+test/                    # e2e (supertest + PostgreSQL real)
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Observability
-
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
-
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Feito por **Wesley Gado** como material do curso prático de desenvolvimento de APIs com SDD.

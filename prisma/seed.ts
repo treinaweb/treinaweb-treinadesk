@@ -19,7 +19,7 @@ async function main() {
     }
     const dev = await seedDevData(prisma);
     console.log(
-      `Dados de teste: ${dev.users} usuários (senha ${DEV_PASSWORD}), ${dev.categories} categorias e ${dev.tickets} tickets`,
+      `Dados de teste: ${dev.users} usuários (senha ${DEV_PASSWORD}), ${dev.categories} categorias, ${dev.tickets} tickets e ${dev.comments} comentários`,
     );
   } finally {
     await prisma.$disconnect();
