@@ -1,9 +1,9 @@
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from '../generated/prisma/client';
-import { IS_PUBLIC_KEY } from './public.decorator';
-import { ROLES_KEY } from './roles.decorator';
-import { RolesGuard } from './roles.guard';
+import { Role } from '../generated/prisma/client.js';
+import { IS_PUBLIC_KEY } from './public.decorator.js';
+import { ROLES_KEY } from './roles.decorator.js';
+import { RolesGuard } from './roles.guard.js';
 
 describe('RolesGuard', () => {
   const reflector = { getAllAndOverride: jest.fn() };

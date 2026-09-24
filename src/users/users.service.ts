@@ -5,12 +5,12 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { Paginated } from '../common/dto/paginated';
-import { Prisma, Role } from '../generated/prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { PasswordHasher } from './password-hasher';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
+import { Paginated } from '../common/dto/paginated.js';
+import { Prisma, Role } from '../generated/prisma/client.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { PasswordHasher } from './password-hasher.js';
 
 const publicUserSelect = {
   id: true,

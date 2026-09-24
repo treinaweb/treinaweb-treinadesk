@@ -1,5 +1,5 @@
-import { Role, TicketStatus } from '../generated/prisma/client';
-import { canTransition, TransitionInput } from './ticket-transitions';
+import { Role, TicketStatus } from '../generated/prisma/client.js';
+import { canTransition, TransitionInput } from './ticket-transitions.js';
 
 type Actor =
   | 'cliente dono'

@@ -1,4 +1,4 @@
-import { Role, TicketStatus } from '../generated/prisma/client';
+import { Role, TicketStatus } from '../generated/prisma/client.js';
 
 export type CommentDecision =
   'ALLOW' | 'FORBIDDEN_INTERNAL' | 'NOT_ASSIGNED' | 'TICKET_CLOSED';

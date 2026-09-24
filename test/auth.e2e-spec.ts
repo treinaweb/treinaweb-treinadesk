@@ -2,10 +2,10 @@ import { INestApplication } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
-import { hashRefreshToken } from './../src/auth/refresh-token';
-import { PrismaService } from './../src/prisma/prisma.service';
+import type { App } from 'supertest/types.js';
+import { AppModule } from './../src/app.module.js';
+import { hashRefreshToken } from './../src/auth/refresh-token.js';
+import { PrismaService } from './../src/prisma/prisma.service.js';
 
 const PASSWORD = 'senha-forte-123';
 

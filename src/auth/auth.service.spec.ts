@@ -1,11 +1,11 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
-import { Role } from '../generated/prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { PasswordHasher } from '../users/password-hasher';
-import { AuthService } from './auth.service';
-import { hashRefreshToken } from './refresh-token';
+import { Role } from '../generated/prisma/client.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { PasswordHasher } from '../users/password-hasher.js';
+import { AuthService } from './auth.service.js';
+import { hashRefreshToken } from './refresh-token.js';
 
 describe('AuthService', () => {
   let service: AuthService;

@@ -1,5 +1,5 @@
-import { Role, TicketStatus } from '../generated/prisma/client';
-import { commentPolicy, CommentPolicyInput } from './comment-policy';
+import { Role, TicketStatus } from '../generated/prisma/client.js';
+import { commentPolicy, CommentPolicyInput } from './comment-policy.js';
 
 // Atores do ticket T do cliente A atribuído a S1.
 const owner = { role: Role.CUSTOMER, isOwner: true, isAssignee: false };

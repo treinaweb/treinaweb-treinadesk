@@ -4,15 +4,15 @@ import {
   Injectable,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import type { AuthenticatedUser } from '../auth/authenticated-user';
-import { Paginated } from '../common/dto/paginated';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import { Prisma, Role, TicketStatus } from '../generated/prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { TicketsService } from '../tickets/tickets.service';
-import { commentPolicy } from './comment-policy';
-import { commentSelect, CommentView } from './comment-select';
-import { CreateCommentDto } from './dto/create-comment.dto';
+import type { AuthenticatedUser } from '../auth/authenticated-user.js';
+import { Paginated } from '../common/dto/paginated.js';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
+import { Prisma, Role, TicketStatus } from '../generated/prisma/client.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { TicketsService } from '../tickets/tickets.service.js';
+import { commentPolicy } from './comment-policy.js';
+import { commentSelect, CommentView } from './comment-select.js';
+import { CreateCommentDto } from './dto/create-comment.dto.js';
 
 @Injectable()
 export class CommentsService {

@@ -10,17 +10,17 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import type { AuthenticatedUser } from '../auth/authenticated-user';
-import { CurrentUser } from '../auth/current-user.decorator';
-import { Public } from '../auth/public.decorator';
-import { Roles } from '../auth/roles.decorator';
-import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
-import type { Paginated } from '../common/dto/paginated';
-import { Role } from '../generated/prisma/client';
-import { ChangeRoleDto } from './dto/change-role.dto';
-import { CreateStaffDto } from './dto/create-staff.dto';
-import { CreateUserDto } from './dto/create-user.dto';
-import { PublicUser, UsersService } from './users.service';
+import type { AuthenticatedUser } from '../auth/authenticated-user.js';
+import { CurrentUser } from '../auth/current-user.decorator.js';
+import { Public } from '../auth/public.decorator.js';
+import { Roles } from '../auth/roles.decorator.js';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto.js';
+import type { Paginated } from '../common/dto/paginated.js';
+import { Role } from '../generated/prisma/client.js';
+import { ChangeRoleDto } from './dto/change-role.dto.js';
+import { CreateStaffDto } from './dto/create-staff.dto.js';
+import { CreateUserDto } from './dto/create-user.dto.js';
+import { PublicUser, UsersService } from './users.service.js';
 
 @Controller('users')
 export class UsersController {

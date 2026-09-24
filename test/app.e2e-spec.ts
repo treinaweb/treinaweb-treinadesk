@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
-import { PrismaService } from './../src/prisma/prisma.service';
+import type { App } from 'supertest/types.js';
+import { AppModule } from './../src/app.module.js';
+import { PrismaService } from './../src/prisma/prisma.service.js';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;

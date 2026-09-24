@@ -1,4 +1,4 @@
-import { Role, TicketStatus } from '../generated/prisma/client';
+import { Role, TicketStatus } from '../generated/prisma/client.js';
 
 export type TransitionActor = 'OWNER' | 'ASSIGNEE' | 'ADMIN';
 

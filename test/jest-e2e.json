@@ -6,7 +6,17 @@
   "setupFiles": ["dotenv/config"],
   "maxWorkers": 1,
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "tsconfig": {
+          "module": "commonjs",
+          "moduleResolution": "node10",
+          "ignoreDeprecations": "6.0",
+          "resolvePackageJsonExports": false
+        }
+      }
+    ]
   },
   "moduleNameMapper": {
     "^(\\.{1,2}/.*)\\.js$": "$1"

@@ -1,5 +1,5 @@
-import type { AuthenticatedUser } from '../auth/authenticated-user';
-import { Prisma, Role, TicketStatus } from '../generated/prisma/client';
+import type { AuthenticatedUser } from '../auth/authenticated-user.js';
+import { Prisma, Role, TicketStatus } from '../generated/prisma/client.js';
 
 // Tickets que o usuário pode ver. Usado por toda leitura e antes de toda
 // escrita; o switch sem default obriga a definir a regra de um papel novo.

@@ -4,10 +4,10 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { Prisma, Role } from '../generated/prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { PasswordHasher } from './password-hasher';
-import { UsersService } from './users.service';
+import { Prisma, Role } from '../generated/prisma/client.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { PasswordHasher } from './password-hasher.js';
+import { UsersService } from './users.service.js';
 
 describe('UsersService', () => {
   let service: UsersService;

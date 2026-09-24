@@ -1,5 +1,5 @@
-import { Prisma } from '../generated/prisma/client';
-import { userSummarySelect } from '../tickets/ticket-select';
+import { Prisma } from '../generated/prisma/client.js';
+import { userSummarySelect } from '../tickets/ticket-select.js';
 
 // author só com id, name e role: um include da relação traria email e
 // passwordHash.

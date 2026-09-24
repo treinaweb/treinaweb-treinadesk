@@ -2,14 +2,14 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as argon2 from 'argon2';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import type { App } from 'supertest/types.js';
+import { AppModule } from './../src/app.module.js';
 import {
   Role,
   TicketPriority,
   TicketStatus,
-} from './../src/generated/prisma/client';
-import { PrismaService } from './../src/prisma/prisma.service';
+} from './../src/generated/prisma/client.js';
+import { PrismaService } from './../src/prisma/prisma.service.js';
 
 const PASSWORD = 'senha-forte-123';
 const MISSING_ID = '00000000-0000-4000-8000-000000000000';

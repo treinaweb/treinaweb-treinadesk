@@ -1,9 +1,9 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '../generated/prisma/client';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { IS_PUBLIC_KEY } from './public.decorator';
+import { Role } from '../generated/prisma/client.js';
+import { JwtAuthGuard } from './jwt-auth.guard.js';
+import { IS_PUBLIC_KEY } from './public.decorator.js';
 
 describe('JwtAuthGuard', () => {
   const jwtService = { verifyAsync: jest.fn() };

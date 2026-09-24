@@ -1,10 +1,10 @@
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { AssignTicketDto } from './assign-ticket.dto';
-import { CreateTicketDto } from './create-ticket.dto';
-import { ListTicketsQueryDto } from './list-tickets-query.dto';
-import { UpdateStatusDto } from './update-status.dto';
+import { AssignTicketDto } from './assign-ticket.dto.js';
+import { CreateTicketDto } from './create-ticket.dto.js';
+import { ListTicketsQueryDto } from './list-tickets-query.dto.js';
+import { UpdateStatusDto } from './update-status.dto.js';
 
 async function parse<T extends object>(
   cls: new () => T,

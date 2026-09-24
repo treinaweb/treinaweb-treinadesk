@@ -1,6 +1,6 @@
-import { PrismaClient, Role } from '../generated/prisma/client';
-import { normalizeEmail } from './normalize-email';
-import { PasswordHasher } from './password-hasher';
+import { PrismaClient, Role } from '../generated/prisma/client.js';
+import { normalizeEmail } from './normalize-email.js';
+import { PasswordHasher } from './password-hasher.js';
 
 type AdminEnv = Partial<Record<'ADMIN_EMAIL' | 'ADMIN_PASSWORD', string>>;
 

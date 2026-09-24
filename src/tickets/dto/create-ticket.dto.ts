@@ -1,6 +1,6 @@
 import { IsEnum, IsString, IsUUID, Length } from 'class-validator';
-import { Trim } from '../../common/dto/trim';
-import { TicketPriority } from '../../generated/prisma/client';
+import { Trim } from '../../common/dto/trim.js';
+import { TicketPriority } from '../../generated/prisma/client.js';
 
 // Sem customerId, status nem assigneeId: o ValidationPipe os recusa com 400.
 export class CreateTicketDto {

@@ -15,7 +15,18 @@ const config: Config = {
   rootDir: '.',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': 'ts-jest',
+    // O app é ESM ("type": "module"), mas os testes rodam em CommonJS.
+    '^.+\\.(t|j)s$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          module: 'commonjs',
+          moduleResolution: 'node10',
+          ignoreDeprecations: '6.0',
+          resolvePackageJsonExports: false,
+        },
+      },
+    ],
   },
   moduleNameMapper: {
     // O client do Prisma (nodenext) importa arquivos .ts com extensão .js.

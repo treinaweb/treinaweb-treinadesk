@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'node:crypto';
-import { Prisma } from '../generated/prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { PasswordHasher } from '../users/password-hasher';
-import { AccessTokenPayload } from './authenticated-user';
-import { generateRefreshToken, hashRefreshToken } from './refresh-token';
+import { Prisma } from '../generated/prisma/client.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { PasswordHasher } from '../users/password-hasher.js';
+import { AccessTokenPayload } from './authenticated-user.js';
+import { generateRefreshToken, hashRefreshToken } from './refresh-token.js';
 
 export interface TokenPair {
   accessToken: string;

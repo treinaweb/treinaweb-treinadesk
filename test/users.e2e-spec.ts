@@ -2,10 +2,10 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as argon2 from 'argon2';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
-import { Role } from './../src/generated/prisma/client';
-import { PrismaService } from './../src/prisma/prisma.service';
+import type { App } from 'supertest/types.js';
+import { AppModule } from './../src/app.module.js';
+import { Role } from './../src/generated/prisma/client.js';
+import { PrismaService } from './../src/prisma/prisma.service.js';
 
 // E-mail válido com exatamente `length` caracteres (parte local <= 64, rótulos <= 63).
 function emailWithLength(length: number): string {

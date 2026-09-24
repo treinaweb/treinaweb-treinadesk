@@ -10,17 +10,17 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import type { AuthenticatedUser } from '../auth/authenticated-user';
-import { CurrentUser } from '../auth/current-user.decorator';
-import { Roles } from '../auth/roles.decorator';
-import { Paginated } from '../common/dto/paginated';
-import { Role } from '../generated/prisma/client';
-import { AssignTicketDto } from './dto/assign-ticket.dto';
-import { CreateTicketDto } from './dto/create-ticket.dto';
-import { ListTicketsQueryDto } from './dto/list-tickets-query.dto';
-import { UpdateStatusDto } from './dto/update-status.dto';
-import { TicketView } from './ticket-select';
-import { TicketsService } from './tickets.service';
+import type { AuthenticatedUser } from '../auth/authenticated-user.js';
+import { CurrentUser } from '../auth/current-user.decorator.js';
+import { Roles } from '../auth/roles.decorator.js';
+import { Paginated } from '../common/dto/paginated.js';
+import { Role } from '../generated/prisma/client.js';
+import { AssignTicketDto } from './dto/assign-ticket.dto.js';
+import { CreateTicketDto } from './dto/create-ticket.dto.js';
+import { ListTicketsQueryDto } from './dto/list-tickets-query.dto.js';
+import { UpdateStatusDto } from './dto/update-status.dto.js';
+import { TicketView } from './ticket-select.js';
+import { TicketsService } from './tickets.service.js';
 
 // Autorização em duas camadas: @Roles por rota (403) e visibilidade por
 // registro no service (404).

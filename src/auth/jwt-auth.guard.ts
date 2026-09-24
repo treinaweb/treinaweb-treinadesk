@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { AccessTokenPayload, AuthenticatedUser } from './authenticated-user';
-import { IS_PUBLIC_KEY } from './public.decorator';
+import { AccessTokenPayload, AuthenticatedUser } from './authenticated-user.js';
+import { IS_PUBLIC_KEY } from './public.decorator.js';
 
 // Registrado como APP_GUARD: toda rota exige Bearer token, exceto as @Public().
 @Injectable()

@@ -5,12 +5,12 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import type { AuthenticatedUser } from '../auth/authenticated-user';
-import { Role, TicketStatus } from '../generated/prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { TicketsService } from '../tickets/tickets.service';
-import { commentSelect } from './comment-select';
-import { CommentsService } from './comments.service';
+import type { AuthenticatedUser } from '../auth/authenticated-user.js';
+import { Role, TicketStatus } from '../generated/prisma/client.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { TicketsService } from '../tickets/tickets.service.js';
+import { commentSelect } from './comment-select.js';
+import { CommentsService } from './comments.service.js';
 
 describe('CommentsService', () => {
   let service: CommentsService;

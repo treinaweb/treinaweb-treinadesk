@@ -5,17 +5,17 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import type { AuthenticatedUser } from '../auth/authenticated-user';
-import { Paginated } from '../common/dto/paginated';
-import { Prisma, Role, TicketStatus } from '../generated/prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { AssignTicketDto } from './dto/assign-ticket.dto';
-import { CreateTicketDto } from './dto/create-ticket.dto';
-import { ListTicketsQueryDto } from './dto/list-tickets-query.dto';
-import { UpdateStatusDto } from './dto/update-status.dto';
-import { ticketSelect, TicketView } from './ticket-select';
-import { canTransition } from './ticket-transitions';
-import { visibilityWhere } from './ticket-visibility';
+import type { AuthenticatedUser } from '../auth/authenticated-user.js';
+import { Paginated } from '../common/dto/paginated.js';
+import { Prisma, Role, TicketStatus } from '../generated/prisma/client.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { AssignTicketDto } from './dto/assign-ticket.dto.js';
+import { CreateTicketDto } from './dto/create-ticket.dto.js';
+import { ListTicketsQueryDto } from './dto/list-tickets-query.dto.js';
+import { UpdateStatusDto } from './dto/update-status.dto.js';
+import { ticketSelect, TicketView } from './ticket-select.js';
+import { canTransition } from './ticket-transitions.js';
+import { visibilityWhere } from './ticket-visibility.js';
 
 const ASSIGNABLE_STATUSES: TicketStatus[] = [
   TicketStatus.OPEN,

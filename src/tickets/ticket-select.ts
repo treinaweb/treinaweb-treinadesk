@@ -1,4 +1,4 @@
-import { Prisma } from '../generated/prisma/client';
+import { Prisma } from '../generated/prisma/client.js';
 
 // Só id, name e role: um include da relação traria email e passwordHash.
 export const userSummarySelect = {

@@ -10,17 +10,17 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import type { AuthenticatedUser } from '../auth/authenticated-user';
-import { CurrentUser } from '../auth/current-user.decorator';
-import { Roles } from '../auth/roles.decorator';
-import { Role } from '../generated/prisma/client';
+import type { AuthenticatedUser } from '../auth/authenticated-user.js';
+import { CurrentUser } from '../auth/current-user.decorator.js';
+import { Roles } from '../auth/roles.decorator.js';
+import { Role } from '../generated/prisma/client.js';
 import {
   ActiveCategoryView,
   CategoriesService,
   CategoryView,
-} from './categories.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+} from './categories.service.js';
+import { CreateCategoryDto } from './dto/create-category.dto.js';
+import { UpdateCategoryDto } from './dto/update-category.dto.js';
 
 // Sem DELETE: desativar (active: false) substitui a exclusão.
 @Controller('categories')

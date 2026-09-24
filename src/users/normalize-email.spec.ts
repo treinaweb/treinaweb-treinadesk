@@ -1,4 +1,4 @@
-import { normalizeEmail } from './normalize-email';
+import { normalizeEmail } from './normalize-email.js';
 
 describe('normalizeEmail', () => {
   it('remove espaços das extremidades e converte para minúsculas', () => {

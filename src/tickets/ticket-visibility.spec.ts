@@ -1,5 +1,5 @@
-import { Role, TicketStatus } from '../generated/prisma/client';
-import { visibilityWhere } from './ticket-visibility';
+import { Role, TicketStatus } from '../generated/prisma/client.js';
+import { visibilityWhere } from './ticket-visibility.js';
 
 describe('visibilityWhere', () => {
   const id = 'u0000000-0000-4000-8000-000000000000';

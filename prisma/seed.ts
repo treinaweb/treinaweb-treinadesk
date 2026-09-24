@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../src/generated/prisma/client';
-import { seedAdmin } from '../src/users/seed-admin';
-import { DEV_PASSWORD, seedDevData } from './dev-data';
+import { PrismaClient } from '../src/generated/prisma/client.js';
+import { seedAdmin } from '../src/users/seed-admin.js';
+import { DEV_PASSWORD, seedDevData } from './dev-data.js';
 
 async function main() {
   const prisma = new PrismaClient({

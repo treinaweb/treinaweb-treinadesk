@@ -3,8 +3,8 @@ import {
   Role,
   TicketPriority,
   TicketStatus,
-} from '../src/generated/prisma/client';
-import { PasswordHasher } from '../src/users/password-hasher';
+} from '../src/generated/prisma/client.js';
+import { PasswordHasher } from '../src/users/password-hasher.js';
 
 // Dados de teste para desenvolvimento local, cobrindo as specs já implementadas.
 // Nunca rodam com NODE_ENV=production (ver prisma/seed.ts).

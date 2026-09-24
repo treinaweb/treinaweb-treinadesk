@@ -25,7 +25,7 @@ npm run seed                          # ADMIN inicial (ADMIN_EMAIL/ADMIN_PASSWOR
 ```
 
 - **Node >= 24.9 obrigatório** (há `.nvmrc`/`engines`). O NestJS 12 é ESM-only e o Jest só carrega ESM via `require` com `--experimental-vm-modules` no Node 24.9+; por isso os scripts de teste chamam `node --experimental-vm-modules node_modules/jest/bin/jest.js`. Não use `npx jest` direto.
-- Os configs do Jest mapeiam imports relativos `*.js` para o `.ts` (necessário para o client do Prisma gerado em `nodenext`).
+- **O pacote é ESM (`"type": "module"`)**: imports relativos precisam da extensão `.js` (`'./app.module.js'`, `'./dto/index.js'`). É isso que permite rodar na Vercel, cujo runtime não carrega o NestJS 12 (ESM-only) via `require`. Os testes continuam em CommonJS: o ts-jest compila com `module: commonjs` e os configs do Jest mapeiam imports relativos `*.js` para o `.ts`.
 - **Os e2e rodam contra o banco de `DATABASE_URL` (carregado do `.env` via `setupFiles`) e apagam as tabelas `tickets`, `categories` e `users` (e, em cascata, `refresh_tokens` e `comments`)** — aponte para um banco de desenvolvimento/teste.
 - Após `prisma migrate dev`, rode `npx prisma generate`: no Prisma 7 o migrate não regenera o client.
 

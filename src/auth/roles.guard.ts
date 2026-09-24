@@ -5,10 +5,10 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Role } from '../generated/prisma/client';
-import { AuthenticatedUser } from './authenticated-user';
-import { IS_PUBLIC_KEY } from './public.decorator';
-import { ROLES_KEY } from './roles.decorator';
+import { Role } from '../generated/prisma/client.js';
+import { AuthenticatedUser } from './authenticated-user.js';
+import { IS_PUBLIC_KEY } from './public.decorator.js';
+import { ROLES_KEY } from './roles.decorator.js';
 
 // Registrado como APP_GUARD depois do JwtAuthGuard: depende de request.user.
 @Injectable()

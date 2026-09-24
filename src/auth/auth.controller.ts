@@ -1,10 +1,10 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { AuthService, TokenPair } from './auth.service';
-import type { AuthenticatedUser } from './authenticated-user';
-import { CurrentUser } from './current-user.decorator';
-import { LoginDto } from './dto/login.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { Public } from './public.decorator';
+import { AuthService, TokenPair } from './auth.service.js';
+import type { AuthenticatedUser } from './authenticated-user.js';
+import { CurrentUser } from './current-user.decorator.js';
+import { LoginDto } from './dto/login.dto.js';
+import { RefreshTokenDto } from './dto/refresh-token.dto.js';
+import { Public } from './public.decorator.js';
 
 @Controller('auth')
 export class AuthController {

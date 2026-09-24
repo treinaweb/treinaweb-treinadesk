@@ -1,6 +1,6 @@
 import { IsIn } from 'class-validator';
-import { Role } from '../../generated/prisma/client';
-import { CreateUserDto } from './create-user.dto';
+import { Role } from '../../generated/prisma/client.js';
+import { CreateUserDto } from './create-user.dto.js';
 
 const STAFF_ROLES = [Role.SUPPORT, Role.ADMIN] as const;
 

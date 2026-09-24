@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { CreateCommentDto } from './create-comment.dto';
+import { CreateCommentDto } from './create-comment.dto.js';
 
 async function parse(plain: Record<string, unknown>) {
   const dto = plainToInstance(CreateCommentDto, plain);

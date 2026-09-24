@@ -5,7 +5,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { Trim } from '../../common/dto/trim';
+import { Trim } from '../../common/dto/trim.js';
 
 // Sem authorId nem ticketId: vêm do token e da rota; o ValidationPipe os
 // recusa com 400.
