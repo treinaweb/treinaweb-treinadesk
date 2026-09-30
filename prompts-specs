@@ -1,0 +1,231 @@
+Prompt 01
+
+ /opsx:propose 001-user-management Contexto: Ainda não há modelos, módulos e nem validação global. Objetivo: Cadastro público de clientes e base de persistência para os próximos módulos. Escopo: POST /users sem autenticação, com nome, email e password, sempre cria CUSTOMER. Resposta: 201, com id, name, email, role createdAt. Papeis existentes: CUSTOMER, SUPPORT, ADMIN. Validação: nome de 2 a 100 caracteres, email valido com até 200 caracteres, password de 8 a 128  caracteres, inválido retorna 400 apontando o campo. Email normalizado (trim + minusculas) e único, duplicado retorna 409, inclusive "ANA@teste.com" contra "ana@teste.com". Propriedade não declarada retorna 400 (nao cria usuario). Senha salva como hash argon2id, nenhum retorna contém senha. Seed cria ADMIN a partir de ADMIN_EMAIL e ADMIN_PASSWORD. PrismaService Global. taks.md em seçoes: infraestrutura, modelo de dados, testes (antes da implementação) implementação, verificação.
+
+Prompt 02
+
+ /opsx:propose 002-authentication
+
+ Contexto: a change 001 (arquivada) criou User, PrismaService global, ValidationPipe como APP_PIPE
+ e POST /users. Não há guard nem identificação do usuário da requisição.
+ Siga o CLAUDE.md e docs/prd.md.
+
+ Objetivo: autenticação obrigatória por padrão, com access token JWT e refresh token revogável.
+
+ Escopo:
+ - POST /auth/login com email e password → 200 com accessToken e refreshToken.
+   E-mail comparado após trim + minúsculas.
+ - Senha errada e e-mail inexistente → 401 com o mesmo corpo ("Credenciais inválidas").
+   Para e-mail inexistente, rodar argon2.verify contra um hash fixo (tempo de resposta parecido).
+ - Todas as rotas exigem Bearer token, exceto POST /users, POST /auth/login e POST /auth/refresh.
+   Token ausente, malformado, com assinatura inválida ou expirado → 401.
+ Access token expira em JWT_ACCESS_EXPIRES_IN (padrão 15m). Payload { sub, email, role }.
+ - POST /auth/refresh: refresh token válido → 200 com novo par. O token apresentado é invalidado
+   na mesma operação (rotação). Inexistente ou expirado (REFRESH_TOKEN_TTL_DAYS) → 401.
+ - Reutilização: refresh token já revogado → 401 e revoga TODOS os refresh tokens ativos dousuário.
+   Duas requisições simultâneas com o mesmo token contam como reutilização.
+ - POST /auth/logout (autenticado) com refreshToken → 204. Só revoga token do próprio usuário;
+   token de outro usuário também responde 204 e continua válido. Sem autenticação → 401.
+ - Refresh token opaco (randomBytes(64)), guardado só como sha256 e nunca em log.
+ - Delta na capability users: GET /users/me → 200 com id, name, email, role, createdAt
+   (userPublicSelect); sem token → 401.
+a do escopo: autorização por papel (change 003), rate limiting (change 006),
+ tokens em cookie, login social, MFA, listagem de sessões.
+
+ Artefatos:
+ - proposal.md: Why, What Changes, Capabilities (nova `auth`; modificada `users`), Impact, Fora do escopo.
+ - specs/auth/spec.md e specs/users/spec.md (ADDED Requirements), com cenários concretos
+   usando "ana@teste.com", "senha-forte-123" e tokens R1/R2 para a rotação.
+ - design.md com decisões numeradas e alternativas rejeitadas: JWT HS256 vs. sessão no servidor;
+UARD + @Public() vs. @UseGuards por controller; refresh opaco com SHA-256 vs. refresh JWT
+   (e por que SHA-256 e não argon2); algoritmo de rotação em transação com updateMany + count === 0;
+   logout filtrado por userId; @HttpCode(200/204). Incluir o model RefreshToken,Risks/Trade-offs,
+   Migration Plan (create-refresh-tokens) e Open Questions (limpeza de tokens expirados).
+ - tasks.md: Dependências e modelo → Testes (antes da implementação) → Implementação → Verificação;
+   cada tarefa termina com como verificar.
+
+
+/opsx:propose 003-role-authorization
+
+Objetivo: restringir rotas por papel e dar ao ADMIN a gestão da equipe e das categorias de ticket.
+
+Escopo — capability users (modificada):
+- GET /users só para ADMIN, paginado: page (padrão 1, mínimo 1) e limit (padrão 20, máximo 100).
+  Resposta 200 { data, page, limit, total }, sem passwordHash. limit=101 → 400.
+  CUSTOMER e SUPPORT → 403.
+- POST /users/staff só para ADMIN: cria usuário com role SUPPORT ou ADMIN, com as mesmas
+  validações e regras de e-mail do cadastro público (e-mail duplicado → 409).
+  role CUSTOMER ou papel inexistente → 400. Outros papéis → 403.
+- PATCH /users/:id/role só para ADMIN → 200 com os dados públicos atualizados.
+  ADMIN alterando o próprio papel → 422 (o papel não muda). Usuário inexistente → 404.
+- Alterar o papel revoga todos os refresh tokens ativos do usuário na mesma transação:
+  o refresh antigo passa a dar 401 e o novo papel vale no próximo login.
+  Access tokens já emitidos mantêm o papel antigo até expirar (limitação aceita e documentada).
+
+Escopo — capability categories (nova):
+- GET /categories para qualquer autenticado, ordenado por name. CUSTOMER e SUPPORT veem só
+  as ativas; ADMIN vê todas, com o campo active. Sem token → 401.
+- POST /categories só para ADMIN: name de 2 a 60 caracteres após trim → 201 com active true.
+  Nome duplicado → 409; nome curto → 400; outros papéis → 403.
+- PATCH /categories/:id só para ADMIN: altera name e/ou active → 200. Inexistente → 404;
+  nome já usado por outra categoria → 409; outros papéis → 403.
+- Desativar substitui excluir: não existe DELETE.
+
+Fora do escopo: exclusão de usuários e de categorias; permissões configuráveis além dos
+três papéis fixos; consultar o papel no banco a cada requisição.
+Não mencione funcionalidades nem changes futuras em nenhum artefato.
+
+Artefatos:
+- proposal.md: Why, What Changes, Capabilities (nova `categories`; modificada `users`),
+  Impact (sem dependências novas; migration create-categories), Fora do escopo.
+- specs/users/spec.md e specs/categories/spec.md (ADDED Requirements), com cenários concretos
+  (ex.: atendente "Bia", "bia@teste.com", categorias "Financeiro" ativa e "Legado" inativa,
+  refreshToken R1 anterior à alteração de papel).
+- design.md com decisões numeradas e alternativas rejeitadas:
+  @Roles() + RolesGuard como APP_GUARD registrado depois do JwtAuthGuard (explicar a ordem)
+  vs. @UseGuards por controller; 403 para restrição de rota; PaginationQueryDto compartilhado
+  em src/common/dto com $transaction([findMany, count]); CreateStaffDto com @IsIn(['SUPPORT','ADMIN'])
+  reaproveitando UsersService; changeRole com bloqueio do próprio id, P2025 → 404 e revogação
+  de refresh tokens na transação; papel lido do token vs. consulta ao banco; model Category;
+  filtro de ativas por papel no where do service. Incluir seção Autorização (rota → papel),
+  Risks/Trade-offs e Migration Plan.
+- tasks.md: Base (modelo e PaginationQueryDto) → Testes (antes da implementação: RolesGuard,
+  PaginationQueryDto, UsersService, CategoriesService) → Implementação → Verificação;
+  cada tarefa termina com como verificar.
+
+
+/opsx:propose 004-tickets
+
+Objetivo: abertura, visibilidade, listagem, atribuição e mudança de status de tickets.
+
+Escopo — capability tickets (nova):
+- POST /tickets só para CUSTOMER: title (5 a 120), description (10 a 5000),
+  priority (LOW, MEDIUM, HIGH, URGENT) e categoryId → 201 com status OPEN, customer = usuário
+  do token e assignee nulo. SUPPORT/ADMIN → 403. Categoria inexistente ou inativa → 422
+  (mesma mensagem). customerId, status ou assigneeId no corpo → 400 e nada é criado.
+  Título curto → 400.
+- Visibilidade: CUSTOMER vê só os próprios tickets; SUPPORT vê tickets OPEN sem atendente e os
+  atribuídos a ele; ADMIN vê todos. Em toda rota com :id, ticket inexistente ou invisível → 404,
+  sem distinguir os dois casos (nunca 403) e sem vazar title/description.
+- GET /tickets: só tickets visíveis, do mais recente ao mais antigo, filtros opcionais status e
+  priority, page (padrão 1) e limit (padrão 20, máximo 50). Resposta { data, page, limit, total },
+  com total calculado sobre os visíveis filtrados. limit=51 ou status inválido → 400. Sem token → 401.
+- GET /tickets/:id: 200 para ticket visível.
+- Nas respostas de ticket, customer e assignee trazem só id, name e role (nada de email ou passwordHash).
+- PATCH /tickets/:id/assign:
+  - SUPPORT, sem corpo: assume ticket OPEN sem atendente → 200 com assignee = ele e status
+    IN_PROGRESS. Ticket já atribuído a outro → 404 (não é visível para ele). Duas chamadas
+    simultâneas: exatamente uma 200, a outra 409 ou 404, e o ticket fica com um único atendente.
+  - ADMIN, com assigneeId: atribui ticket OPEN, IN_PROGRESS ou WAITING_CUSTOMER a um SUPPORT → 200.
+    Se estava OPEN, vira IN_PROGRESS. assigneeId que não é SUPPORT, ou ticket em status que não
+    permite atribuição (ex.: CLOSED) → 422.
+  - CUSTOMER → 403.
+- PATCH /tickets/:id/status: só as transições abaixo → 200; qualquer outra → 422, inclusive
+  status igual ao atual e qualquer alteração em ticket CLOSED. Ao ir para CLOSED, preencher closedAt.
+  - IN_PROGRESS → WAITING_CUSTOMER: SUPPORT atribuído ou ADMIN
+  - IN_PROGRESS → RESOLVED: SUPPORT atribuído ou ADMIN
+  - WAITING_CUSTOMER → RESOLVED: SUPPORT atribuído ou ADMIN
+  - RESOLVED → IN_PROGRESS: CUSTOMER dono
+  - RESOLVED → CLOSED: CUSTOMER dono ou ADMIN
+  - OPEN → CLOSED: CUSTOMER dono ou ADMIN
+  OPEN → IN_PROGRESS pela rota de status → 422 (só acontece via assign).
+  Valor de status inexistente → 400. Ticket de outro cliente → 404 e o status não muda.
+
+Fora do escopo: anexos, notificações, SLA, histórico de alterações de status, edição de
+title/description/priority/categoria depois da abertura, controle otimista com coluna de versão.
+Não mencione funcionalidades nem changes futuras em nenhum artefato.
+
+Artefatos:
+- proposal.md: Why (citando BOLA/API1:2023), What Changes, Capabilities (nova `tickets`;
+  nenhuma modificada), Impact (migration create-tickets com enums TicketStatus e TicketPriority,
+  relações em User e Category, sem dependências novas), Fora do escopo.
+- specs/tickets/spec.md (ADDED Requirements), com cenários concretos usando cliente A e B,
+  atendentes S1 e S2, ticket T, categorias "Financeiro" ativa e "Legado" inativa,
+  title "Cobrança duplicada".
+- design.md com decisões numeradas e alternativas rejeitadas:
+  1. model Ticket com relações nomeadas TicketCustomer/TicketAssignee e índices
+     (customerId, assigneeId, [status, createdAt]);
+  2. visibilityWhere(user) retornando Prisma.TicketWhereInput e findVisibleOrFail(id, user)
+     com findFirst + AND, chamado antes de qualquer escrita (rejeitar findUnique + comparação
+     no controller e 403 para ticket alheio);
+  3. userSummarySelect { id, name, role } (explicar por que include: { customer: true } vaza passwordHash);
+  4. tabela de transições em src/tickets/ticket-transitions.ts com função pura
+     canTransition({ from, to, role, isOwner, isAssignee }) e atores OWNER/ASSIGNEE/ADMIN;
+  5. escrita condicional com updateMany filtrando o estado esperado; count === 0 → 409;
+  6. categoria validada com findFirst({ id, active: true }) → 422;
+  7. DTOs (CreateTicketDto, ListTicketsQueryDto estendendo PaginationQueryDto com @Max(50),
+     AssignTicketDto, UpdateStatusDto).
+  Incluir seção Autorização (@Roles('CUSTOMER') no POST, @Roles('SUPPORT','ADMIN') no assign,
+  o resto por registro), Risks/Trade-offs (ex.: rota nova que esqueça findVisibleOrFail) e Migration Plan.
+- tasks.md: Modelo → Testes (antes da implementação: canTransition cobrindo toda a tabela,
+  visibilityWhere, create, findVisibleOrFail, assign, changeStatus, DTOs) → Implementação →
+  Verificação manual com dois clientes, dois atendentes e o admin; cada tarefa termina com como verificar.
+
+/opsx:propose 005-comments
+
+Contexto: as changes 001 a 004 (arquivadas) entregaram usuários com papéis CUSTOMER, SUPPORT e ADMIN,
+autenticação global, @Roles() + RolesGuard, PaginationQueryDto, userSummarySelect { id, name, role }
+
+/opsx:propose 005-comments
+
+Objetivo: comentários públicos e notas internas dentro de um ticket.
+
+Escopo — capability comments (nova):
+- POST /tickets/:id/comments: body de 1 a 5000 caracteres após trim → 201 com id, body,
+  isInternal, createdAt e author. Podem comentar o CUSTOMER dono do ticket, o SUPPORT atribuído
+  e qualquer ADMIN.
+  - Ticket invisível para o usuário (outro cliente, ticket de outro atendente) → 404
+    e nenhum comentário é criado.
+  - SUPPORT em ticket visível que não está atribuído a ele (ex.: ticket OPEN da fila) → 422.
+  - Body só com espaços ou com 5001 caracteres → 400.
+- Notas internas: isInternal true só para SUPPORT e ADMIN; CUSTOMER enviando isInternal true → 403
+  e nada é criado. Sem isInternal, o comentário é público.
+- GET /tickets/:id/comments: comentários de ticket visível, em ordem de criação, page (padrão 1)
+  e limit (padrão 20, máximo 100), resposta { data, page, limit, total }. Para CUSTOMER nunca
+  aparecem notas internas (nem o texto delas). SUPPORT atribuído e ADMIN veem tudo.
+  Ticket invisível → 404.
+- Retomada: comentário do CUSTOMER dono em ticket WAITING_CUSTOMER muda o status para IN_PROGRESS
+  na mesma operação que grava o comentário. Comentários de SUPPORT/ADMIN não mudam o status.
+- Ticket CLOSED não aceita comentário → 422, para qualquer papel.
+- author só com id, name e role (sem email e sem passwordHash), tanto na criação quanto na listagem.
+
+Fora do escopo: edição e exclusão de comentários; anexos, menções e notificações;
+formatação rica (Markdown/HTML) no body; moderação de conteúdo; ordenação configurável.
+Não mencione funcionalidades nem changes futuras em nenhum artefato.
+
+Fluxo de testes desta change: os testes são gerados a partir dos cenários e commitados ANTES
+da implementação. Durante a implementação, nenhum arquivo .spec.ts é alterado.
+
+Artefatos:
+- proposal.md: Why, What Changes, Capabilities (nova `comments`; nenhuma modificada),
+  Impact (módulo comments dependente de TicketsService.findVisibleOrFail, migration create-comments,
+  sem dependências novas, fluxo de testes commitados antes do apply), Fora do escopo.
+- specs/comments/spec.md (ADDED Requirements), com cenários concretos usando cliente A e B,
+  atendentes S1 e S2, ticket T, bodies "Segue o comprovante", "Estamos verificando" e a nota
+  interna "Cliente já pediu estorno antes" (o cliente não pode receber o texto "estorno").
+- design.md com decisões numeradas e alternativas:
+  1. model Comment (ticketId com onDelete Cascade, authorId, body VarChar(5000), isInternal,
+     índice [ticketId, createdAt]) e relações em Ticket e User;
+  2. CommentsController em tickets/:ticketId/comments, CommentsModule importa TicketsModule e
+     findVisibleOrFail é a primeira operação das duas rotas (sem duplicar a regra de visibilidade);
+  3. função pura commentPolicy({ role, isOwner, isAssignee, ticketStatus, isInternal }) retornando
+     'ALLOW' | 'FORBIDDEN_INTERNAL' | 'NOT_ASSIGNED' | 'TICKET_CLOSED', com ordem de verificação
+     definida e conversão para 403/422 no service;
+  4. filtro isInternal: false no where para CUSTOMER (explicar por que não filtrar o resultado em memória);
+  5. $transaction interativa com comment.create + ticket.updateMany condicionado a WAITING_CUSTOMER;
+  6. DTOs (CreateCommentDto com @Transform(trim), @IsNotEmpty, @MaxLength(5000), isInternal @IsBoolean
+     opcional; listagem com PaginationQueryDto; select do autor com userSummarySelect);
+  7. fluxo de testes commitados antes do apply.
+  Incluir seção Autorização (sem @Roles; 404 por findVisibleOrFail; 403/422 por commentPolicy;
+  nota interna no where), Risks/Trade-offs (body com HTML/script; status alterado entre a leitura
+  e a transação) e Migration Plan.
+- tasks.md começando pelos testes:
+  1. Testes (gerados a partir dos cenários e commitados antes da implementação): commentPolicy,
+     CommentsService.create e list com mocks de TicketsService e PrismaService, CreateCommentDto;
+     verificar com `npm test -- comments` que falham e commitar
+     `test(comments): testes dos cenários da change 005`;
+  2. Modelo;
+  3. Implementação (sem alterar arquivos de teste), terminando com
+     `git diff HEAD~1 --stat -- '*.spec.ts'` para provar que nenhum teste mudou;
+  4. Verificação manual (nota interna invisível para o cliente; retomada de WAITING_CUSTOMER)
+     e `npm test` + `npx tsc --noEmit`.
