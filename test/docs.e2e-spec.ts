@@ -71,7 +71,8 @@ describe('API docs (e2e)', () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
-    const instance = moduleFixture.createNestApplication<App>();
+    const instance =
+      moduleFixture.createNestApplication<INestApplication<App>>();
     setupOpenApi(instance);
     await instance.init();
     return instance;
