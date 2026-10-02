@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsString, Length, ValidateIf } from 'class-validator';
 import { Trim } from '../../common/dto/trim.js';
 
@@ -5,12 +6,14 @@ import { Trim } from '../../common/dto/trim.js';
 const IfPresent = () => ValidateIf((_, value) => value !== undefined);
 
 export class UpdateCategoryDto {
+  @ApiPropertyOptional({ minLength: 2, maxLength: 60, example: 'Financeiro' })
   @IfPresent()
   @Trim()
   @IsString()
   @Length(2, 60)
   name?: string;
 
+  @ApiPropertyOptional({ example: false })
   @IfPresent()
   @IsBoolean()
   active?: boolean;
