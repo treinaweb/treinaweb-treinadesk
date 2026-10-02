@@ -61,9 +61,13 @@ Qualquer transição fora da tabela, pelo status atual ou pelo papel, retorna 42
 | Regra de negócio impede a operação (transição inválida, categoria inativa) | 422 |
 | Excesso de requisições | 429 |
 
+## Consumo por frontends
+
+A API é pública e serve de backend para o curso de Next.js que consome APIs. O aluno executa a API localmente e a consome a partir de um frontend independente (Next.js na porta 3001, chamando a API pelo servidor e guardando os tokens em cookies httpOnly próprios); uma instância publicada na Vercel é usada apenas como demonstração.
+
 ## Fora do escopo
 
-Anexos, envio de e-mail, SLA, múltiplas empresas, frontend, recuperação de senha, exclusão de dados.
+Anexos, envio de e-mail, SLA, múltiplas empresas, recuperação de senha, exclusão de dados. O frontend não faz parte deste repositório (ver "Consumo por frontends").
 
 ## Requisitos não funcionais
 
@@ -71,5 +75,5 @@ Anexos, envio de e-mail, SLA, múltiplas empresas, frontend, recuperação de se
 - Access token com validade de 15 minutos; refresh token opaco com rotação e detecção de reutilização.
 - Rate limiting global e específico nas rotas de autenticação.
 - Nenhuma resposta ou log contém senha, hash de senha ou tokens.
-- Documentação OpenAPI fora de produção.
+- Documentação OpenAPI disponível em todos os ambientes, com guia de execução local e guia de integração para frontends.
 - Testes unitários e testes e2e contra PostgreSQL real.
