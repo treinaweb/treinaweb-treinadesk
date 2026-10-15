@@ -1,0 +1,619 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: API TREINA-DESK
+meta:
+  id: wrk_8329dad834714240b3bee77d0341508d
+  created: 1789407884847
+  modified: 1789407884847
+  description: ""
+collection:
+  - url: http://localhost:3000/
+    name: healthy
+    meta:
+      id: req_f4085a37c16848e0aaf8c74993a306b5
+      created: 1789407890286
+      modified: 1789407924789
+      isPrivate: false
+      description: ""
+      sortKey: -1789407890286
+    method: GET
+    headers:
+      - name: User-Agent
+        value: insomnia/11.3.0
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - name: Auth
+    meta:
+      id: fld_5a514687b03a4ab7adb681289bf54cb6
+      created: 1789485961757
+      modified: 1791918403602
+      sortKey: -1789485961758
+      description: ""
+    children:
+      - url: " http://localhost:3000/auth/login"
+        name: Login
+        meta:
+          id: req_19469fd1abbf456f83b1b59f50909134
+          created: 1789484316280
+          modified: 1791918295710
+          isPrivate: false
+          description: ""
+          sortKey: -1789485965650
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{ "email": "admin@helpdesk.local", "password": "5sOzZ8sGKAR-L_E_" }'
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: none
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/auth/refresh
+        name: Refresh Token
+        meta:
+          id: req_b63bd98e51f7476c841341f035e6e22b
+          created: 1789484643021
+          modified: 1791918283366
+          isPrivate: false
+          description: ""
+          sortKey: -1789485965550
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{ "refreshToken":
+            "yoARcBNx-88HsHp_JX9AQFwiv8apVHOEuMzW_ONI1sb4Eb9S-P4gB4-DotqAbc0NOf6D7lr_mWCVT_VluWW0qQ"
+            }'
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: none
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/auth/logout
+        name: Logout
+        meta:
+          id: req_8cc0c6914e364b7c864bae942998b344
+          created: 1789484771770
+          modified: 1790193123914
+          isPrivate: false
+          description: ""
+          sortKey: -1789485965450
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{ "refreshToken":
+            "yoARcBNx-88HsHp_JX9AQFwiv8apVHOEuMzW_ONI1sb4Eb9S-P4gB4-DotqAbc0NOf6D7lr_mWCVT_VluWW0qQ"
+            }'
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NTJhNmM2Zi1jMWM3LTQxYTQtOWFlYy01YTYxNGVlNWI5MzQiLCJlbWFpbCI6ImFkbWluQGhlbHBkZXNrLmxvY2FsIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzkwMTkzMDgyLCJleHAiOjE3OTAxOTM5ODJ9.s4qd8hzP3BJw10dF728Hne0Lr3ES1b8dDON5TyDSGms
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Users
+    meta:
+      id: fld_412abfa52a29471982f09230e07643de
+      created: 1789490105423
+      modified: 1789490105423
+      sortKey: -1789490105423
+      description: ""
+    children:
+      - url: http://localhost:3000/users
+        name: New Users
+        meta:
+          id: req_42472d1bbeb04f3a90a3d7455014db2f
+          created: 1789408742292
+          modified: 1790190017220
+          isPrivate: false
+          description: ""
+          sortKey: -1789490110521
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "name": "k",
+              "email": "k@teste.com",
+              "password": "senha-forte-123"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/users/me
+        name: Me
+        meta:
+          id: req_2710835c424a42dcbfd4e6a9bb6e421b
+          created: 1789484211828
+          modified: 1790193186949
+          isPrivate: false
+          description: ""
+          sortKey: -1789490110421
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NTJhNmM2Zi1jMWM3LTQxYTQtOWFlYy01YTYxNGVlNWI5MzQiLCJlbWFpbCI6ImFkbWluQGhlbHBkZXNrLmxvY2FsIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzkwMTkzMTcxLCJleHAiOjE3OTAxOTQwNzF9.gPhSiJe8MHx2bwosPjiusBUgc-8cZHBXoHj6eXfTZn4
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/users/staff
+        name: New User Staff
+        meta:
+          id: req_b73ed99de6514ddfa385144e042438ac
+          created: 1789488415439
+          modified: 1789502009398
+          isPrivate: false
+          description: ""
+          sortKey: -1789490110321
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{ "name": "wesley suporte", "email": "wesley@suporte.com", "password":
+            "senha-forte-123", "role": "SUPPORT" }'
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYTUyYmFlOS02NDA5LTQwN2MtODkzMS1hN2IyYWQzZTk0ZmYiLCJlbWFpbCI6ImFkbWluQGhlbHBkZXNrLmxvY2FsIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzg5NTAxOTc4LCJleHAiOjE3ODk1MDI4Nzh9.xpa5UVNZ5Q1y7lBT0asEqEYJ-_hXNud_HBTsvUyipy8
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: " https://treinadesk.vercel.app/users"
+        name: Users
+        meta:
+          id: req_c454133c7351442e9783c2c7101cbc32
+          created: 1789489980522
+          modified: 1790288775663
+          isPrivate: false
+          description: ""
+          sortKey: -1789490110221
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMjJiZWE3Yi00ZWM0LTQwNTAtODMwMC1kYzA4MmYzZGZjNzciLCJlbWFpbCI6ImFkbWluQGhlbHBkZXNrLmxvY2FsIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzkwMjg4NzcwLCJleHAiOjE3OTAyODk2NzB9.pwWUglqNjwhkdKH2WhEl5KpjbskcNRXbJfAXP4o2agk
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/users/9fee4609-1225-40c1-b530-9a181e2ea40a/role
+        name: Role User
+        meta:
+          id: req_7d09cd2b287343c096b1f64db3860c16
+          created: 1789490872219
+          modified: 1789501885016
+          isPrivate: false
+          description: ""
+          sortKey: -1789490110621
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: '{ "role":"SUPPORT" }'
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiYTUyYmFlOS02NDA5LTQwN2MtODkzMS1hN2IyYWQzZTk0ZmYiLCJlbWFpbCI6ImFkbWluQGhlbHBkZXNrLmxvY2FsIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzg5NDkxMDY4LCJleHAiOjE3ODk0OTE5Njh9.pgrmwxzmXcPWcpbwsBtX6m-D_f0kfZWze0vGryOx-58
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Categories
+    meta:
+      id: fld_6f6bfe2884f1417dbf231d79af38da26
+      created: 1789491132973
+      modified: 1789491132973
+      sortKey: -1789491132973
+      description: ""
+    children:
+      - url: http://localhost:3000/categories
+        name: Categories
+        meta:
+          id: req_533738a1851e43c09189497a816848d4
+          created: 1789491136465
+          modified: 1790269151890
+          isPrivate: false
+          description: ""
+          sortKey: -1789491136465
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZGFkZDUwNy05MjQyLTQyZDMtYjUxNC05N2I3MTI1NjM1ZmIiLCJlbWFpbCI6ImJydW5vQHRlc3RlLmNvbSIsInJvbGUiOiJDVVNUT01FUiIsImlhdCI6MTc5MDI2ODkxMiwiZXhwIjoxNzkwMjY5ODEyfQ.7ubIiiJzHYnnvvtJMwUyxu5sI7lSDYa0nY5jEeJIiGo
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/categories
+        name: New Categorie
+        meta:
+          id: req_dc8f5d0d0af647bba16dbc0578513393
+          created: 1789491251816
+          modified: 1790206595654
+          isPrivate: false
+          description: ""
+          sortKey: -1789491136565
+        method: POST
+        body:
+          mimeType: application/json
+          text: '{ "name":"Sugestão-2" }'
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzYjQwMTYyOS04NzZiLTQxOGEtOTg1MS1kNGFiOTdhMjI3YWIiLCJlbWFpbCI6ImJpYUB0ZXN0ZS5jb20iLCJyb2xlIjoiU1VQUE9SVCIsImlhdCI6MTc5MDIwNjU4MCwiZXhwIjoxNzkwMjA3NDgwfQ.vMuPG8UXXwfljWM6cVnKcr557CjqGcFtZtOL4SnM3MU
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/categories/fe09d9e9-105d-42de-afac-37b5bcbd256c
+        name: Update Categorie Status
+        meta:
+          id: req_29d72846b5054b37894c2c97ecd93dd4
+          created: 1789491332744
+          modified: 1790206537113
+          isPrivate: false
+          description: ""
+          sortKey: -1789491136665
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: '{ "active": false }'
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjNzExNGQ4OS03YmVkLTQ2ZGItYTk4Ny1mY2E2NDI3Yzg0NWEiLCJlbWFpbCI6ImFkbWluQGhlbHBkZXNrLmxvY2FsIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzkwMjA2NDU4LCJleHAiOjE3OTAyMDczNTh9.chy_N--lPuSwziobl24Ep5xG821R88TCtyKbDNE2aiY
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Tickets
+    meta:
+      id: fld_5fdf35b6612642d59fcb3ef651916b84
+      created: 1789499639465
+      modified: 1789499639465
+      sortKey: -1789499639465
+      description: ""
+    children:
+      - url: http://localhost:3000/tickets
+        name: New Ticket
+        meta:
+          id: req_382d03acc4794356afb81edfbd0fdaf2
+          created: 1789499783195
+          modified: 1790269171879
+          isPrivate: false
+          description: ""
+          sortKey: -1789499783195
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "title": "Problema ao gerar pix",
+              "description": "pix não carrega",
+              "priority": "HIGH",
+              "categoryId": "a9c3a59c-d16f-48b3-be03-70fe259d2627"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZGFkZDUwNy05MjQyLTQyZDMtYjUxNC05N2I3MTI1NjM1ZmIiLCJlbWFpbCI6ImJydW5vQHRlc3RlLmNvbSIsInJvbGUiOiJDVVNUT01FUiIsImlhdCI6MTc5MDI2ODkxMiwiZXhwIjoxNzkwMjY5ODEyfQ.7ubIiiJzHYnnvvtJMwUyxu5sI7lSDYa0nY5jEeJIiGo
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/tickets/6d2b3077-7107-4875-be16-d1e072467105/assign
+        name: Tickets Assign (SUPPORT)
+        meta:
+          id: req_269ec27c7c684a119be4f18ce68b5d3a
+          created: 1789500253160
+          modified: 1790215098204
+          isPrivate: false
+          description: ""
+          sortKey: -1789495459930
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: "{}"
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwZDVkMjgxMy1hZGJmLTQwNmQtYmFkNy00Nzc2NWVjZDc1ZGYiLCJlbWFpbCI6ImNhcmxhQHRlc3RlLmNvbSIsInJvbGUiOiJTVVBQT1JUIiwiaWF0IjoxNzkwMjE1MDY4LCJleHAiOjE3OTAyMTU5Njh9.8xfEMhsxuoUHW8ulNtvVJMP2SX9GVdMUJDH345pvYBM
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/tickets/723e4b8d-cd9d-455e-ba6b-6ec40eb78e56/assign
+        name: Tickets Assign (adm)
+        meta:
+          id: req_890ecf5058ec4415a84beb221538c259
+          created: 1789502133059
+          modified: 1790269272359
+          isPrivate: false
+          description: ""
+          sortKey: -1789493298297.5
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "assigneeId": "6f1ab7e0-ebad-41cc-9391-e984aa681495"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMjJiZWE3Yi00ZWM0LTQwNTAtODMwMC1kYzA4MmYzZGZjNzciLCJlbWFpbCI6ImFkbWluQGhlbHBkZXNrLmxvY2FsIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzkwMjY5MjAyLCJleHAiOjE3OTAyNzAxMDJ9.xJFJ_VIvDKmPfKAAcuY4snzBG_Mwat0ORb8Wf-yYO3M
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/tickets/6d2b3077-7107-4875-be16-d1e072467105/status
+        name: Tickets Status
+        meta:
+          id: req_5a1bb31316fb49638bdb1112e8a17fa2
+          created: 1789502521253
+          modified: 1790215295483
+          isPrivate: false
+          description: ""
+          sortKey: -1789492217481.25
+        method: PATCH
+        body:
+          mimeType: application/json
+          text: |-
+            {
+              "status": "RESOLVED"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiODlhOWVjYi0yOTYwLTRkYWMtOTI0Mi0xYjQwMmM4YTFmYWUiLCJlbWFpbCI6ImFkbWluQGhlbHBkZXNrLmxvY2FsIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzkwMjE1MTcyLCJleHAiOjE3OTAyMTYwNzJ9.b--mvkwW4d6XfvwHVDMVnh6SvdoGd0v_f7RP9WarOPc
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: https://treinadesk.vercel.app/tickets
+        name: "Tickets "
+        meta:
+          id: req_e6bbe0d7a6a542409357f13a7e381a12
+          created: 1789502583733
+          modified: 1790288803948
+          isPrivate: false
+          description: ""
+          sortKey: -1789491677073.125
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          disabled: false
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlMjJiZWE3Yi00ZWM0LTQwNTAtODMwMC1kYzA4MmYzZGZjNzciLCJlbWFpbCI6ImFkbWluQGhlbHBkZXNrLmxvY2FsIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzkwMjg4NzcwLCJleHAiOjE3OTAyODk2NzB9.pwWUglqNjwhkdKH2WhEl5KpjbskcNRXbJfAXP4o2agk
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/tickets/723e4b8d-cd9d-455e-ba6b-6ec40eb78e56
+        name: Ticket
+        meta:
+          id: req_cf4e9e51ddc1420fa7c05f1a0530b929
+          created: 1789502688046
+          modified: 1790269561525
+          isPrivate: false
+          description: ""
+          sortKey: -1789491406869.0625
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          disabled: false
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZGFkZDUwNy05MjQyLTQyZDMtYjUxNC05N2I3MTI1NjM1ZmIiLCJlbWFpbCI6ImJydW5vQHRlc3RlLmNvbSIsInJvbGUiOiJDVVNUT01FUiIsImlhdCI6MTc5MDI2OTU0MywiZXhwIjoxNzkwMjcwNDQzfQ.1sN_hRtNF1xQPYVHJDYeAqmU5fhRhxu8P4BgQ-RcbkQ
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/tickets/723e4b8d-cd9d-455e-ba6b-6ec40eb78e56/comments
+        name: New Comment
+        meta:
+          id: req_7b85851096e849dca9005d6c26a8ad08
+          created: 1790266076767
+          modified: 1790269516254
+          isPrivate: false
+          description: ""
+          sortKey: -1790266076767
+        method: POST
+        body:
+          mimeType: application/json
+          text: >-
+            {
+              "body": "Pessoal, criei um novo pix para o bruno, por favor, podem dar uma olhada no bug em questão?",
+            	"isInternal": true
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZjFhYjdlMC1lYmFkLTQxY2MtOTM5MS1lOTg0YWE2ODE0OTUiLCJlbWFpbCI6ImJpYUB0ZXN0ZS5jb20iLCJyb2xlIjoiU1VQUE9SVCIsImlhdCI6MTc5MDI2OTQyOCwiZXhwIjoxNzkwMjcwMzI4fQ.fGqrmicTQS4DozZbdOYlcn4eedFWSTHmTya1pBTsnzY
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:3000/tickets/723e4b8d-cd9d-455e-ba6b-6ec40eb78e56/comments
+        name: Comment
+        meta:
+          id: req_2d2de785799a4546b6e4f843ceb97f96
+          created: 1790277339198
+          modified: 1790277455315
+          isPrivate: false
+          description: ""
+          sortKey: -1789882929981
+        method: GET
+        headers:
+          - name: User-Agent
+            value: insomnia/11.3.0
+        authentication:
+          type: bearer
+          token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZjFhYjdlMC1lYmFkLTQxY2MtOTM5MS1lOTg0YWE2ODE0OTUiLCJlbWFpbCI6ImJpYUB0ZXN0ZS5jb20iLCJyb2xlIjoiU1VQUE9SVCIsImlhdCI6MTc5MDI3NzQ0OCwiZXhwIjoxNzkwMjc4MzQ4fQ.p5v2p2ehaPfxNDIg_m90lVDPp5Ty0rBqYY7qjXfmQP0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_3b2d7de2605c7fdf719e621cca931b3e657b1007
+    created: 1789407884872
+    modified: 1789407884872
+environments:
+  name: Base Environment
+  meta:
+    id: env_3b2d7de2605c7fdf719e621cca931b3e657b1007
+    created: 1789407884870
+    modified: 1789407884870
+    isPrivate: false

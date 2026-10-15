@@ -4,6 +4,9 @@ Esse repositório contem o código-fonte produzido durante as aulas do projeto p
 
 A API também é o backend do curso de Next.js que consome APIs: rode-a localmente e construa o frontend em um projeto separado.
 
+- Repositório da API: https://github.com/treinaweb/treinaweb-treinadesk
+- Coleção de endpoints para o Insomnia: [`endpoints-treinadesk-api.yaml`](endpoints-treinadesk-api.yaml) (importe em *Insomnia → Import*)
+
 ## Rodando localmente
 
 Pré-requisitos:
